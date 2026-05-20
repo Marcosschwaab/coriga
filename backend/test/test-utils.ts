@@ -1,0 +1,57 @@
+import { Test, TestingModuleBuilder } from '@nestjs/testing';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
+import supertest from 'supertest';
+import { ResidentsModule } from '../src/modules/residents/residents.module';
+import { ReservationsModule } from '../src/modules/reservations/reservations.module';
+import { PaymentsModule } from '../src/modules/payments/payments.module';
+import { HolidaysModule } from '../src/modules/holidays/holidays.module';
+import { PricingConfigModule } from '../src/modules/pricing-config/pricing-config.module';
+import { DashboardModule } from '../src/modules/dashboard/dashboard.module';
+
+export function createTestingModule(): TestingModuleBuilder {
+  return Test.createTestingModule({
+    imports: [
+      TypeOrmModule.forRoot({
+        type: 'sqlite',
+        database: ':memory:',
+        entities: [__dirname + '/../src/entities/*.entity{.ts,.js}'],
+        synchronize: true,
+        dropSchema: true,
+      }),
+      ResidentsModule,
+      ReservationsModule,
+      PaymentsModule,
+      HolidaysModule,
+      PricingConfigModule,
+      DashboardModule,
+    ],
+  });
+}
+
+export interface TestContext {
+  app: INestApplication;
+  httpServer: any;
+}
+
+export async function setupTestApp(): Promise<TestContext> {
+  const moduleFixture = await createTestingModule().compile();
+  const app = moduleFixture.createNestApplication();
+  app.setGlobalPrefix('api');
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
+  await app.init();
+  const httpServer = app.getHttpServer();
+  return { app, httpServer };
+}
+
+export async function teardownTestApp(ctx: TestContext): Promise<void> {
+  await ctx.app.close();
+}
+
+export const request = supertest;
