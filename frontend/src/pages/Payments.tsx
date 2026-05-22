@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../services/api';
+import { formatCurrency } from '../services/currency';
 import { Payment, Reservation } from '../types';
 import { Modal } from '../components/Modal';
+import { Loading } from '../components/Loading';
+import { Pagination } from '../components/Pagination';
 import { useToast } from '../components/Toast';
 import { CreditCard, AlertCircle, CheckCircle, DollarSign, Filter, Wallet, ReceiptText } from 'lucide-react';
 
@@ -10,18 +13,23 @@ export function PaymentsPage() {
   const { t } = useTranslation();
   const [payments, setPayments] = useState<(Payment & { reservation?: Reservation })[]>([]);
   const [filterStatus, setFilterStatus] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const { showToast } = useToast();
 
   useEffect(() => {
-    loadPayments();
-  }, [filterStatus]);
+    setLoading(true);
+    loadPayments().finally(() => setLoading(false));
+  }, [filterStatus, page]);
 
   const loadPayments = async () => {
-    const data = await api.payments.list(filterStatus || undefined);
+    const result = await api.payments.list(filterStatus || undefined, page);
+    setTotalPages(result.totalPages);
     const withReservations = await Promise.all(
-      data.map(async (p) => {
+      result.data.map(async (p) => {
         try {
           const res = await api.reservations.get(p.id);
           return { ...p, reservation: res as any };
@@ -47,6 +55,8 @@ export function PaymentsPage() {
 
   const pendingPayments = payments.filter((p) => p.status === 'pending' || p.status === 'partially_paid');
   const paidPayments = payments.filter((p) => p.status === 'paid');
+
+  if (loading) return <Loading text={t('payments.title')} />;
 
   return (
     <div>
@@ -82,7 +92,7 @@ export function PaymentsPage() {
             </div>
           </div>
           <p className="text-3xl font-bold mt-3 text-red-600">
-            ${pendingPayments.reduce((sum, p) => sum + Number(p.remainingAmount), 0).toFixed(2)}
+            {formatCurrency(pendingPayments.reduce((sum, p) => sum + Number(p.remainingAmount), 0))}
           </p>
         </div>
       </div>
@@ -122,9 +132,9 @@ export function PaymentsPage() {
                     #{p.id}
                   </div>
                 </td>
-                <td className="py-3 px-4">${Number(p.totalAmount).toFixed(2)}</td>
-                <td className="py-3 px-4 text-green-600">${Number(p.paidAmount).toFixed(2)}</td>
-                <td className="py-3 px-4 text-red-600">${Number(p.remainingAmount).toFixed(2)}</td>
+                <td className="py-3 px-4">{formatCurrency(p.totalAmount)}</td>
+                <td className="py-3 px-4 text-green-600">{formatCurrency(p.paidAmount)}</td>
+                <td className="py-3 px-4 text-red-600">{formatCurrency(p.remainingAmount)}</td>
                 <td className="py-3 px-4 capitalize">{p.paymentMethod || '-'}</td>
                 <td className="py-3 px-4">
                   <span className={`badge ${p.status === 'paid' ? 'badge-success' : p.status === 'pending' ? 'badge-warning' : p.status === 'partially_paid' ? 'badge-info' : 'badge-danger'}`}>
@@ -149,6 +159,8 @@ export function PaymentsPage() {
           <p className="text-center py-8 text-gray-500">{t('payments.noPayments')}</p>
         )}
       </div>
+
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
 
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); setSelectedPayment(null); }} title={t('payments.recordPayment')}>
         {selectedPayment && (
@@ -182,7 +194,7 @@ function RecordPaymentForm({ payment, onSubmit, onCancel }: {
       <div className="p-4 bg-red-50 rounded-lg flex items-center justify-between">
         <div>
           <p className="text-sm text-red-600 font-medium">{t('payments.remainingBalance')}</p>
-          <p className="text-2xl font-bold text-red-700">${Number(payment.remainingAmount).toFixed(2)}</p>
+          <p className="text-2xl font-bold text-red-700">{formatCurrency(payment.remainingAmount)}</p>
         </div>
         <DollarSign className="w-8 h-8 text-red-300" />
       </div>

@@ -61,6 +61,14 @@ export interface PricingConfig {
   updatedAt: string;
 }
 
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export interface DashboardStats {
   totalReservations: number;
   confirmedReservations: number;

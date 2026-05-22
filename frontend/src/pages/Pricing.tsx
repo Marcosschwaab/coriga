@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../services/api';
 import { PricingConfig } from '../types';
 import { useToast } from '../components/Toast';
+import { Loading } from '../components/Loading';
 import { Settings, DollarSign, CalendarDays, CalendarRange, PartyPopper, Save } from 'lucide-react';
 
 export function PricingPage() {
@@ -36,7 +37,7 @@ export function PricingPage() {
     }
   };
 
-  if (!config) return <div className="text-center py-12">{t('common.loading')}</div>;
+  if (!config) return <Loading text={t('pricing.title')} />;
 
   return (
     <div>

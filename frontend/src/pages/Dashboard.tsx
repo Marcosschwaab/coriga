@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../services/api';
+import { formatCurrency } from '../services/currency';
 import { DashboardStats } from '../types';
+import { Loading } from '../components/Loading';
 import { CalendarDays, CheckCircle, AlertCircle, TrendingUp, DollarSign, ArrowUpRight } from 'lucide-react';
 
 export function DashboardPage() {
@@ -15,11 +17,9 @@ export function DashboardPage() {
     api.dashboard.getStats(month).then(setStats).finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="text-center py-12">{t('common.loading')}</div>;
+  if (loading) return <Loading text={t('dashboard.title')} />;
   if (!stats) return <div className="text-center py-12">{t('common.noData')}</div>;
 
-  const formatCurrency = (value: number) =>
-    new Intl.NumberFormat(i18n.language === 'pt-BR' ? 'pt-BR' : 'en-US', { style: 'currency', currency: 'BRL' }).format(value);
 
   return (
     <div>

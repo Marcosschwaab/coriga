@@ -20,7 +20,9 @@
     "confirmDelete": "Are you sure you want to delete this item?",
     "confirmCancel": "Are you sure?",
     "success": "Success",
-    "error": "Error"
+    "error": "Error",
+    "page": "Page",
+    "of": "of"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -148,6 +150,15 @@
     "holidayHelper": "National, municipal, or condominium holidays",
     "savePricing": "Save Pricing",
     "updatedSuccess": "Pricing updated successfully"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "username": "Username",
+    "password": "Password",
+    "loginTitle": "Sign in to Coriga",
+    "loginError": "Invalid username or password",
+    "welcome": "Welcome"
   },
   "language": {
     "english": "English",

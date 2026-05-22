@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Payment, PaymentStatus, PaymentMethod } from '../../entities/payment.entity';
 import { Reservation, ReservationStatus } from '../../entities/reservation.entity';
 import { CreatePaymentDto, UpdatePaymentDto } from '../../dtos/payment.dto';
+import { PaginatedResult } from '../../dtos/pagination';
 
 @Injectable()
 export class PaymentsService {
@@ -48,7 +49,7 @@ export class PaymentsService {
     return this.paymentRepository.save(payment);
   }
 
-  async findAll(status?: string): Promise<Payment[]> {
+  async findAll(status?: string, page = 1, limit = 20): Promise<PaginatedResult<Payment>> {
     const qb = this.paymentRepository.createQueryBuilder('payment')
       .leftJoinAndSelect('payment.reservation', 'reservation')
       .leftJoinAndSelect('reservation.resident', 'resident');
@@ -58,7 +59,9 @@ export class PaymentsService {
     }
 
     qb.orderBy('payment.createdAt', 'DESC');
-    return qb.getMany();
+    const total = await qb.getCount();
+    const data = await qb.skip((page - 1) * limit).take(limit).getMany();
+    return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
   async findOne(id: number): Promise<Payment> {

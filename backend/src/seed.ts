@@ -1,26 +1,61 @@
 import { DataSource } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 import { Resident } from './entities/resident.entity';
 import { Reservation, ReservationStatus, DayType } from './entities/reservation.entity';
 import { Payment, PaymentStatus, PaymentMethod } from './entities/payment.entity';
 import { Holiday, HolidayType } from './entities/holiday.entity';
 import { PricingConfig } from './entities/pricing-config.entity';
+import { User, UserRole } from './entities/user.entity';
 
 async function seed() {
   const dataSource = new DataSource({
     type: 'sqlite',
     database: 'data/database.sqlite',
-    entities: [Resident, Reservation, Payment, Holiday, PricingConfig],
-    synchronize: false,
+    entities: [User, Resident, Reservation, Payment, Holiday, PricingConfig],
+    synchronize: true,
   });
 
   await dataSource.initialize();
   console.log('Database connected. Starting seed...');
 
+  const userRepo = dataSource.getRepository(User);
   const residentRepo = dataSource.getRepository(Resident);
   const reservationRepo = dataSource.getRepository(Reservation);
   const paymentRepo = dataSource.getRepository(Payment);
   const holidayRepo = dataSource.getRepository(Holiday);
   const pricingConfigRepo = dataSource.getRepository(PricingConfig);
+
+  // Create default admin user
+  const adminPassword = await bcrypt.hash('admin123', 10);
+  const existingAdmin = await userRepo.findOne({ where: { username: 'admin' } });
+  if (!existingAdmin) {
+    const admin = userRepo.create({
+      username: 'admin',
+      email: 'admin@coriga.com',
+      password: adminPassword,
+      role: UserRole.ADMIN,
+    });
+    await userRepo.save(admin);
+    console.log('Created admin user (username: admin, password: admin123)');
+  } else {
+    console.log('Admin user already exists');
+  }
+
+  // Create default user
+  const userPassword = await bcrypt.hash('user123', 10);
+  const existingUser = await userRepo.findOne({ where: { username: 'user' } });
+  if (!existingUser) {
+    const user = userRepo.create({
+      username: 'user',
+      email: 'user@coriga.com',
+      password: userPassword,
+      role: UserRole.USER,
+    });
+    await userRepo.save(user);
+    console.log('Created user (username: user, password: user123)');
+  } else {
+    console.log('User already exists');
+  }
 
   // Create pricing config
   const config = pricingConfigRepo.create({

@@ -7,6 +7,7 @@ import { Payment, PaymentStatus } from '../../entities/payment.entity';
 import { PricingConfig } from '../../entities/pricing-config.entity';
 import { Holiday } from '../../entities/holiday.entity';
 import { CreateReservationDto, UpdateReservationDto } from '../../dtos/reservation.dto';
+import { PaginatedResult } from '../../dtos/pagination';
 
 @Injectable()
 export class ReservationsService {
@@ -95,7 +96,7 @@ export class ReservationsService {
     return this.reservationRepository.save(saved);
   }
 
-  async findAll(month?: string, status?: string): Promise<Reservation[]> {
+  async findAll(month?: string, status?: string, page = 1, limit = 20): Promise<PaginatedResult<Reservation>> {
     const qb = this.reservationRepository.createQueryBuilder('reservation')
       .leftJoinAndSelect('reservation.resident', 'resident')
       .leftJoinAndSelect('reservation.payment', 'payment');
@@ -113,7 +114,9 @@ export class ReservationsService {
     }
 
     qb.orderBy('reservation.date', 'ASC');
-    return qb.getMany();
+    const total = await qb.getCount();
+    const data = await qb.skip((page - 1) * limit).take(limit).getMany();
+    return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
   async findOne(id: number): Promise<Reservation> {

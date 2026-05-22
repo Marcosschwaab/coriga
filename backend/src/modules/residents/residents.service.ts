@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Resident } from '../../entities/resident.entity';
 import { CreateResidentDto, UpdateResidentDto } from '../../dtos/resident.dto';
+import { PaginatedResult } from '../../dtos/pagination';
 
 @Injectable()
 export class ResidentsService {
@@ -20,7 +21,7 @@ export class ResidentsService {
     return this.residentRepository.save(resident);
   }
 
-  async findAll(search?: string): Promise<Resident[]> {
+  async findAll(search?: string, page = 1, limit = 20): Promise<PaginatedResult<Resident>> {
     const qb = this.residentRepository.createQueryBuilder('resident');
     if (search) {
       qb.where(
@@ -28,7 +29,9 @@ export class ResidentsService {
         { search: `%${search}%` },
       );
     }
-    return qb.getMany();
+    const total = await qb.getCount();
+    const data = await qb.skip((page - 1) * limit).take(limit).getMany();
+    return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
   async findOne(id: number): Promise<Resident> {

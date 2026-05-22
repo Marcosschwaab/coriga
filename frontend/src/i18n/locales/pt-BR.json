@@ -20,7 +20,9 @@
     "confirmDelete": "Tem certeza que deseja excluir este item?",
     "confirmCancel": "Tem certeza?",
     "success": "Sucesso",
-    "error": "Erro"
+    "error": "Erro",
+    "page": "Página",
+    "of": "de"
   },
   "nav": {
     "dashboard": "Painel",
@@ -148,6 +150,15 @@
     "holidayHelper": "Feriados nacionais, municipais ou do condomínio",
     "savePricing": "Salvar Preços",
     "updatedSuccess": "Preços atualizados com sucesso"
+  },
+  "auth": {
+    "login": "Entrar",
+    "logout": "Sair",
+    "username": "Usuário",
+    "password": "Senha",
+    "loginTitle": "Entrar no Coriga",
+    "loginError": "Usuário ou senha inválidos",
+    "welcome": "Bem-vindo"
   },
   "language": {
     "english": "English",

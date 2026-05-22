@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../services/api';
 import { Holiday } from '../types';
 import { Modal } from '../components/Modal';
+import { Loading } from '../components/Loading';
+import { Pagination } from '../components/Pagination';
 import { useToast } from '../components/Toast';
 import { PartyPopper, Plus, Pencil, Trash2, Calendar, Tag, FileText, Filter, CalendarDays } from 'lucide-react';
 
@@ -11,12 +13,19 @@ export function HolidaysPage() {
   const [holidays, setHolidays] = useState<Holiday[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editingHoliday, setEditingHoliday] = useState<Holiday | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [yearFilter, setYearFilter] = useState(new Date().getFullYear());
   const { showToast } = useToast();
 
   useEffect(() => {
-    api.holidays.list(yearFilter).then(setHolidays);
-  }, [yearFilter]);
+    setLoading(true);
+    api.holidays.list(yearFilter, page).then((res) => {
+      setHolidays(res.data);
+      setTotalPages(res.totalPages);
+    }).finally(() => setLoading(false));
+  }, [yearFilter, page]);
 
   const handleSave = async (data: Partial<Holiday>) => {
     try {
@@ -29,7 +38,10 @@ export function HolidaysPage() {
       }
       setShowModal(false);
       setEditingHoliday(null);
-      api.holidays.list(yearFilter).then(setHolidays);
+      api.holidays.list(yearFilter, page).then((res) => {
+        setHolidays(res.data);
+        setTotalPages(res.totalPages);
+      });
     } catch (err: any) {
       showToast(err.message, 'error');
     }
@@ -40,11 +52,16 @@ export function HolidaysPage() {
     try {
       await api.holidays.remove(id);
       showToast(t('holidays.deletedSuccess'));
-      api.holidays.list(yearFilter).then(setHolidays);
+      api.holidays.list(yearFilter, page).then((res) => {
+        setHolidays(res.data);
+        setTotalPages(res.totalPages);
+      });
     } catch (err: any) {
       showToast(err.message, 'error');
     }
   };
+
+  if (loading) return <Loading text={t('holidays.title')} />;
 
   return (
     <div>
@@ -117,6 +134,8 @@ export function HolidaysPage() {
           <p className="text-center py-8 text-gray-500">{t('holidays.noHolidays')}</p>
         )}
       </div>
+
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
 
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditingHoliday(null); }} title={editingHoliday ? t('holidays.editHoliday') : t('holidays.addHoliday')}>
         <HolidayForm holiday={editingHoliday} onSave={handleSave} onCancel={() => { setShowModal(false); setEditingHoliday(null); }} />

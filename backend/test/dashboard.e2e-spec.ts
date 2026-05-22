@@ -4,11 +4,14 @@ describe('DashboardController (e2e)', () => {
   let ctx: TestContext;
   let residentId: number;
 
+  const auth = (t: TestContext) => ({ Authorization: `Bearer ${t.adminToken}` });
+
   beforeAll(async () => {
     ctx = await setupTestApp();
 
     const res = await request(ctx.httpServer)
       .post('/api/residents')
+      .set(auth(ctx))
       .send({
         name: 'Dashboard Resident',
         phone: '4444444444',
@@ -24,6 +27,7 @@ describe('DashboardController (e2e)', () => {
 
     await request(ctx.httpServer)
       .post('/api/reservations')
+      .set(auth(ctx))
       .send({
         residentId,
         date: `${monthStr}-05`,
@@ -32,6 +36,7 @@ describe('DashboardController (e2e)', () => {
 
     await request(ctx.httpServer)
       .post('/api/reservations')
+      .set(auth(ctx))
       .send({
         residentId,
         date: `${monthStr}-10`,
@@ -47,6 +52,7 @@ describe('DashboardController (e2e)', () => {
     it('should return dashboard statistics', async () => {
       const res = await request(ctx.httpServer)
         .get('/api/dashboard/stats')
+        .set(auth(ctx))
         .expect(200);
 
       expect(res.body).toHaveProperty('totalReservations');
@@ -65,6 +71,7 @@ describe('DashboardController (e2e)', () => {
 
       const res = await request(ctx.httpServer)
         .get(`/api/dashboard/stats?month=${monthStr}`)
+        .set(auth(ctx))
         .expect(200);
 
       expect(res.body).toHaveProperty('totalReservations');
@@ -74,6 +81,7 @@ describe('DashboardController (e2e)', () => {
     it('should return zero stats for month with no reservations', async () => {
       const res = await request(ctx.httpServer)
         .get('/api/dashboard/stats?month=2030-01')
+        .set(auth(ctx))
         .expect(200);
 
       expect(res.body.totalReservations).toBe(0);
@@ -87,6 +95,7 @@ describe('DashboardController (e2e)', () => {
     it('should return upcoming reservations sorted by date', async () => {
       const res = await request(ctx.httpServer)
         .get('/api/dashboard/stats')
+        .set(auth(ctx))
         .expect(200);
 
       if (res.body.upcomingReservations.length > 1) {
@@ -102,6 +111,7 @@ describe('DashboardController (e2e)', () => {
     it('should return predicted revenue as a number', async () => {
       const res = await request(ctx.httpServer)
         .get('/api/dashboard/stats')
+        .set(auth(ctx))
         .expect(200);
 
       expect(typeof res.body.predictedRevenue).toBe('number');
@@ -111,6 +121,7 @@ describe('DashboardController (e2e)', () => {
     it('should return received revenue as a number', async () => {
       const res = await request(ctx.httpServer)
         .get('/api/dashboard/stats')
+        .set(auth(ctx))
         .expect(200);
 
       expect(typeof res.body.receivedRevenue).toBe('number');

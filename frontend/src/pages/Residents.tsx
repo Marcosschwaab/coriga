@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../services/api';
 import { Resident } from '../types';
 import { Modal } from '../components/Modal';
+import { Loading } from '../components/Loading';
+import { Pagination } from '../components/Pagination';
 import { useToast } from '../components/Toast';
 import { Users, Plus, Search, Pencil, UserMinus, Mail, Phone, MapPin, User, AtSign } from 'lucide-react';
 
@@ -10,13 +12,20 @@ export function ResidentsPage() {
   const { t } = useTranslation();
   const [residents, setResidents] = useState<Resident[]>([]);
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [editingResident, setEditingResident] = useState<Resident | null>(null);
   const { showToast } = useToast();
 
   useEffect(() => {
-    api.residents.list(search).then(setResidents);
-  }, [search]);
+    setLoading(true);
+    api.residents.list(search, page).then((res) => {
+      setResidents(res.data);
+      setTotalPages(res.totalPages);
+    }).finally(() => setLoading(false));
+  }, [search, page]);
 
   const handleSave = async (data: Partial<Resident>) => {
     try {
@@ -29,7 +38,10 @@ export function ResidentsPage() {
       }
       setShowModal(false);
       setEditingResident(null);
-      api.residents.list(search).then(setResidents);
+      api.residents.list(search, page).then((res) => {
+        setResidents(res.data);
+        setTotalPages(res.totalPages);
+      });
     } catch (err: any) {
       showToast(err.message, 'error');
     }
@@ -40,11 +52,16 @@ export function ResidentsPage() {
     try {
       await api.residents.remove(id);
       showToast(t('residents.deactivatedSuccess'));
-      api.residents.list(search).then(setResidents);
+      api.residents.list(search, page).then((res) => {
+        setResidents(res.data);
+        setTotalPages(res.totalPages);
+      });
     } catch (err: any) {
       showToast(err.message, 'error');
     }
   };
+
+  if (loading) return <Loading text={t('residents.title')} />;
 
   return (
     <div>
@@ -139,6 +156,8 @@ export function ResidentsPage() {
           <p className="text-center py-8 text-gray-500">{t('residents.noResidents')}</p>
         )}
       </div>
+
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
 
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditingResident(null); }} title={editingResident ? t('residents.editResident') : t('residents.addResident')}>
         <ResidentForm resident={editingResident} onSave={handleSave} onCancel={() => { setShowModal(false); setEditingResident(null); }} />

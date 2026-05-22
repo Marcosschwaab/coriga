@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Holiday } from '../../entities/holiday.entity';
 import { CreateHolidayDto, UpdateHolidayDto } from '../../dtos/holiday.dto';
+import { PaginatedResult } from '../../dtos/pagination';
 
 @Injectable()
 export class HolidaysService {
@@ -16,13 +17,15 @@ export class HolidaysService {
     return this.holidayRepository.save(holiday);
   }
 
-  async findAll(year?: number): Promise<Holiday[]> {
+  async findAll(year?: number, page = 1, limit = 20): Promise<PaginatedResult<Holiday>> {
     const qb = this.holidayRepository.createQueryBuilder('holiday');
     if (year) {
       qb.where("holiday.date LIKE :year", { year: `${year}%` });
     }
     qb.orderBy('holiday.date', 'ASC');
-    return qb.getMany();
+    const total = await qb.getCount();
+    const data = await qb.skip((page - 1) * limit).take(limit).getMany();
+    return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
   async findOne(id: number): Promise<Holiday> {

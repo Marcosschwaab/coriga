@@ -3,6 +3,8 @@ import { setupTestApp, teardownTestApp, request, TestContext } from './test-util
 describe('PricingConfigController (e2e)', () => {
   let ctx: TestContext;
 
+  const auth = (t: TestContext) => ({ Authorization: `Bearer ${t.adminToken}` });
+
   beforeAll(async () => {
     ctx = await setupTestApp();
   });
@@ -15,6 +17,7 @@ describe('PricingConfigController (e2e)', () => {
     it('should return pricing config, creating default if none exists', async () => {
       const res = await request(ctx.httpServer)
         .get('/api/pricing-config')
+        .set(auth(ctx))
         .expect(200);
 
       expect(res.body).toHaveProperty('id');
@@ -26,10 +29,12 @@ describe('PricingConfigController (e2e)', () => {
     it('should return existing config on subsequent calls', async () => {
       const res1 = await request(ctx.httpServer)
         .get('/api/pricing-config')
+        .set(auth(ctx))
         .expect(200);
 
       const res2 = await request(ctx.httpServer)
         .get('/api/pricing-config')
+        .set(auth(ctx))
         .expect(200);
 
       expect(res1.body.id).toBe(res2.body.id);
@@ -40,6 +45,7 @@ describe('PricingConfigController (e2e)', () => {
     it('should update weekday price', async () => {
       const res = await request(ctx.httpServer)
         .patch('/api/pricing-config')
+        .set(auth(ctx))
         .send({ weekdayPrice: 120 })
         .expect(200);
 
@@ -49,6 +55,7 @@ describe('PricingConfigController (e2e)', () => {
     it('should update weekend price', async () => {
       const res = await request(ctx.httpServer)
         .patch('/api/pricing-config')
+        .set(auth(ctx))
         .send({ weekendPrice: 180 })
         .expect(200);
 
@@ -58,6 +65,7 @@ describe('PricingConfigController (e2e)', () => {
     it('should update holiday price', async () => {
       const res = await request(ctx.httpServer)
         .patch('/api/pricing-config')
+        .set(auth(ctx))
         .send({ holidayPrice: 250 })
         .expect(200);
 
@@ -67,6 +75,7 @@ describe('PricingConfigController (e2e)', () => {
     it('should update all prices at once', async () => {
       const res = await request(ctx.httpServer)
         .patch('/api/pricing-config')
+        .set(auth(ctx))
         .send({ weekdayPrice: 100, weekendPrice: 150, holidayPrice: 200 })
         .expect(200);
 
@@ -78,6 +87,7 @@ describe('PricingConfigController (e2e)', () => {
     it('should reject negative price', async () => {
       await request(ctx.httpServer)
         .patch('/api/pricing-config')
+        .set(auth(ctx))
         .send({ weekdayPrice: -10 })
         .expect(400);
     });
@@ -85,6 +95,7 @@ describe('PricingConfigController (e2e)', () => {
     it('should reject non-numeric price', async () => {
       await request(ctx.httpServer)
         .patch('/api/pricing-config')
+        .set(auth(ctx))
         .send({ weekdayPrice: 'invalid' })
         .expect(400);
     });

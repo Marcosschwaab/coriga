@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../services/api';
+import { formatCurrency } from '../services/currency';
 import { Reservation, Holiday, Resident } from '../types';
 import { Modal } from '../components/Modal';
 import { useToast } from '../components/Toast';
+import { Loading } from '../components/Loading';
 import {
   ChevronLeft,
   ChevronRight,
@@ -28,6 +30,7 @@ export function CalendarPage() {
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>('');
+  const [loading, setLoading] = useState(true);
   const { showToast } = useToast();
 
   const year = currentDate.getFullYear();
@@ -37,10 +40,17 @@ export function CalendarPage() {
   const monthNames = t('calendar.monthNames', { returnObjects: true }) as string[];
 
   useEffect(() => {
+    setLoading(true);
     const monthStr = `${year}-${String(month + 1).padStart(2, '0')}`;
-    api.reservations.list(monthStr, filterStatus || undefined).then(setReservations);
-    api.holidays.list(year).then(setHolidays);
-    api.residents.list().then(setResidents);
+    Promise.all([
+      api.reservations.list(monthStr, filterStatus || undefined),
+      api.holidays.list(year),
+      api.residents.list(),
+    ]).then(([res, hol, resi]) => {
+      setReservations(res.data);
+      setHolidays(hol.data);
+      setResidents(resi.data);
+    }).finally(() => setLoading(false));
   }, [year, month, filterStatus]);
 
   const getDaysInMonth = (y: number, m: number) => new Date(y, m + 1, 0).getDate();
@@ -84,7 +94,7 @@ export function CalendarPage() {
       showToast(t('calendar.createdSuccess'));
       setShowModal(false);
       const monthStr = `${year}-${String(month + 1).padStart(2, '0')}`;
-      api.reservations.list(monthStr, filterStatus || undefined).then(setReservations);
+      api.reservations.list(monthStr, filterStatus || undefined).then((res) => setReservations(res.data));
     } catch (err: any) {
       showToast(err.message, 'error');
     }
@@ -97,7 +107,7 @@ export function CalendarPage() {
       showToast(t('calendar.cancelledSuccess'));
       setShowModal(false);
       const monthStr = `${year}-${String(month + 1).padStart(2, '0')}`;
-      api.reservations.list(monthStr, filterStatus || undefined).then(setReservations);
+      api.reservations.list(monthStr, filterStatus || undefined).then((res) => setReservations(res.data));
     } catch (err: any) {
       showToast(err.message, 'error');
     }
@@ -109,6 +119,8 @@ export function CalendarPage() {
   const formatDate = (dateStr: string) => {
     return new Date(dateStr + 'T00:00:00').toLocaleDateString(i18n.language === 'pt-BR' ? 'pt-BR' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   };
+
+  if (loading) return <Loading text={t('calendar.title')} />;
 
   return (
     <div>
@@ -189,7 +201,7 @@ export function CalendarPage() {
                 {reservation && dayInfo.currentMonth && (
                   <div className="mt-1">
                     <p className="text-xs font-medium truncate">{reservation.resident?.name}</p>
-                    <p className="text-xs text-gray-500">${Number(reservation.price).toFixed(2)}</p>
+                    <p className="text-xs text-gray-500">{formatCurrency(reservation.price)}</p>
                     {reservation.payment?.status === 'paid' && <span className="text-xs text-green-600 flex items-center gap-0.5"><CheckCircle className="w-3 h-3" /> {t('calendar.paid')}</span>}
                     {reservation.payment?.status === 'pending' && <span className="text-xs text-yellow-600 flex items-center gap-0.5"><Clock className="w-3 h-3" /> {t('calendar.pending')}</span>}
                     {reservation.payment?.status === 'partially_paid' && <span className="text-xs text-blue-600 flex items-center gap-0.5"><LoaderCircle className="w-3 h-3" /> {t('calendar.partiallyPaid')}</span>}
@@ -250,7 +262,7 @@ export function CalendarPage() {
                   <DollarSign className="w-4 h-4 text-gray-500" />
                   <div>
                     <p className="text-sm text-gray-500">{t('common.price')}</p>
-                    <p className="font-medium">${Number(reservation.price).toFixed(2)}</p>
+                    <p className="font-medium">{formatCurrency(reservation.price)}</p>
                   </div>
                 </div>
                 {reservation.notes && (
@@ -294,19 +306,47 @@ function CreateReservationForm({ date, residents, holiday, onSubmit, onCancel }:
   const { t } = useTranslation();
   const [residentId, setResidentId] = useState('');
   const [notes, setNotes] = useState('');
+  const [search, setSearch] = useState('');
+  const [open, setOpen] = useState(false);
 
   const activeResidents = residents.filter((r) => r.isActive);
+  const filtered = activeResidents.filter((r) =>
+    !search || r.name.toLowerCase().includes(search.toLowerCase()) || r.address.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const selected = activeResidents.find((r) => r.id === Number(residentId));
 
   return (
     <form onSubmit={(e) => { e.preventDefault(); if (residentId) onSubmit(Number(residentId), notes); }} className="space-y-4">
-      <div>
+      <div className="relative">
         <label className="label">{t('calendar.selectResident')}</label>
-        <select value={residentId} onChange={(e) => setResidentId(e.target.value)} className="input" required>
-          <option value="">{t('calendar.chooseResident')}</option>
-          {activeResidents.map((r) => (
-            <option key={r.id} value={r.id}>{r.name} - {r.address}</option>
-          ))}
-        </select>
+        <input
+          value={open ? search : (selected ? `${selected.name} - ${selected.address}` : '')}
+          onChange={(e) => { setSearch(e.target.value); setOpen(true); }}
+          onFocus={() => { setOpen(true); setSearch(''); }}
+          onBlur={() => setTimeout(() => setOpen(false), 200)}
+          placeholder={t('calendar.chooseResident')}
+          className="input"
+          required
+          autoComplete="off"
+        />
+        {open && (
+          <div className="absolute z-10 top-full mt-1 left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+            {filtered.length === 0 ? (
+              <p className="p-3 text-sm text-gray-400">{t('common.noResults')}</p>
+            ) : filtered.map((r) => (
+              <button
+                key={r.id}
+                type="button"
+                className={`w-full text-left px-3 py-2.5 text-sm hover:bg-indigo-50 transition-colors ${Number(residentId) === r.id ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700'}`}
+                onMouseDown={() => { setResidentId(String(r.id)); setSearch(''); setOpen(false); }}
+              >
+                <span className="font-medium">{r.name}</span>
+                <span className="text-gray-400 ml-2">{r.address}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
       {holiday && (
         <div className="p-3 bg-purple-50 rounded-lg flex items-center gap-2">

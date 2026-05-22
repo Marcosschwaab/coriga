@@ -4,11 +4,14 @@ describe('PaymentsController (e2e)', () => {
   let ctx: TestContext;
   let residentId: number;
 
+  const auth = (t: TestContext) => ({ Authorization: `Bearer ${t.adminToken}` });
+
   beforeAll(async () => {
     ctx = await setupTestApp();
 
     const res = await request(ctx.httpServer)
       .post('/api/residents')
+      .set(auth(ctx))
       .send({
         name: 'Payment Resident',
         phone: '3333333333',
@@ -25,6 +28,7 @@ describe('PaymentsController (e2e)', () => {
   async function createReservationWithPayment(date: string) {
     const res = await request(ctx.httpServer)
       .post('/api/reservations')
+      .set(auth(ctx))
       .send({ residentId, date });
     return { reservationId: res.body.id, paymentId: res.body.paymentId };
   }
@@ -35,6 +39,7 @@ describe('PaymentsController (e2e)', () => {
 
       await request(ctx.httpServer)
         .post('/api/payments')
+        .set(auth(ctx))
         .send({
           reservationId,
           totalAmount: 150,
@@ -47,6 +52,7 @@ describe('PaymentsController (e2e)', () => {
     it('should reject payment for non-existent reservation', async () => {
       await request(ctx.httpServer)
         .post('/api/payments')
+        .set(auth(ctx))
         .send({
           reservationId: 99999,
           totalAmount: 100,
@@ -64,18 +70,20 @@ describe('PaymentsController (e2e)', () => {
     it('should return all payments', async () => {
       const res = await request(ctx.httpServer)
         .get('/api/payments')
+        .set(auth(ctx))
         .expect(200);
 
-      expect(Array.isArray(res.body)).toBe(true);
-      expect(res.body.length).toBeGreaterThanOrEqual(2);
+      expect(Array.isArray(res.body.data)).toBe(true);
+      expect(res.body.data.length).toBeGreaterThanOrEqual(2);
     });
 
     it('should filter payments by status', async () => {
       const res = await request(ctx.httpServer)
         .get('/api/payments?status=pending')
+        .set(auth(ctx))
         .expect(200);
 
-      expect(res.body.every((p: any) => p.status === 'pending')).toBe(true);
+      expect(res.body.data.every((p: any) => p.status === 'pending')).toBe(true);
     });
   });
 
@@ -90,6 +98,7 @@ describe('PaymentsController (e2e)', () => {
     it('should return a payment by id', async () => {
       const res = await request(ctx.httpServer)
         .get(`/api/payments/${paymentId}`)
+        .set(auth(ctx))
         .expect(200);
 
       expect(res.body.id).toBe(paymentId);
@@ -98,6 +107,7 @@ describe('PaymentsController (e2e)', () => {
     it('should return 404 for non-existent payment', async () => {
       await request(ctx.httpServer)
         .get('/api/payments/99999')
+        .set(auth(ctx))
         .expect(404);
     });
   });
@@ -109,13 +119,16 @@ describe('PaymentsController (e2e)', () => {
     beforeAll(async () => {
       const { paymentId: pid } = await createReservationWithPayment('2026-11-15');
       paymentId = pid;
-      const res = await request(ctx.httpServer).get(`/api/payments/${paymentId}`);
+      const res = await request(ctx.httpServer)
+        .get(`/api/payments/${paymentId}`)
+        .set(auth(ctx));
       totalAmount = Number(res.body.totalAmount);
     });
 
     it('should update paid amount and auto-set status to paid', async () => {
       const res = await request(ctx.httpServer)
         .patch(`/api/payments/${paymentId}`)
+        .set(auth(ctx))
         .send({ paidAmount: totalAmount })
         .expect(200);
 
@@ -126,11 +139,14 @@ describe('PaymentsController (e2e)', () => {
 
     it('should update paid amount to partial', async () => {
       const { paymentId: pid } = await createReservationWithPayment('2026-11-16');
-      const res2 = await request(ctx.httpServer).get(`/api/payments/${pid}`);
+      const res2 = await request(ctx.httpServer)
+        .get(`/api/payments/${pid}`)
+        .set(auth(ctx));
       const total2 = Number(res2.body.totalAmount);
 
       const res = await request(ctx.httpServer)
         .patch(`/api/payments/${pid}`)
+        .set(auth(ctx))
         .send({ paidAmount: Math.floor(total2 / 2) })
         .expect(200);
 
@@ -141,6 +157,7 @@ describe('PaymentsController (e2e)', () => {
     it('should update total amount', async () => {
       const res = await request(ctx.httpServer)
         .patch(`/api/payments/${paymentId}`)
+        .set(auth(ctx))
         .send({ totalAmount: 200 })
         .expect(200);
 
@@ -150,6 +167,7 @@ describe('PaymentsController (e2e)', () => {
     it('should update payment method', async () => {
       const res = await request(ctx.httpServer)
         .patch(`/api/payments/${paymentId}`)
+        .set(auth(ctx))
         .send({ paymentMethod: 'card' })
         .expect(200);
 
@@ -159,6 +177,7 @@ describe('PaymentsController (e2e)', () => {
     it('should update payment date', async () => {
       const res = await request(ctx.httpServer)
         .patch(`/api/payments/${paymentId}`)
+        .set(auth(ctx))
         .send({ paymentDate: '2026-12-01' })
         .expect(200);
 
@@ -168,6 +187,7 @@ describe('PaymentsController (e2e)', () => {
     it('should update payment status directly', async () => {
       const res = await request(ctx.httpServer)
         .patch(`/api/payments/${paymentId}`)
+        .set(auth(ctx))
         .send({ status: 'cancelled' })
         .expect(200);
 
@@ -177,6 +197,7 @@ describe('PaymentsController (e2e)', () => {
     it('should update payment notes', async () => {
       const res = await request(ctx.httpServer)
         .patch(`/api/payments/${paymentId}`)
+        .set(auth(ctx))
         .send({ notes: 'Test notes' })
         .expect(200);
 
@@ -191,7 +212,9 @@ describe('PaymentsController (e2e)', () => {
     beforeAll(async () => {
       const { paymentId: pid } = await createReservationWithPayment('2026-11-20');
       paymentId = pid;
-      const res = await request(ctx.httpServer).get(`/api/payments/${paymentId}`);
+      const res = await request(ctx.httpServer)
+        .get(`/api/payments/${paymentId}`)
+        .set(auth(ctx));
       totalAmount = Number(res.body.totalAmount);
     });
 
@@ -199,6 +222,7 @@ describe('PaymentsController (e2e)', () => {
       const halfAmount = Math.floor(totalAmount / 2);
       const res = await request(ctx.httpServer)
         .post(`/api/payments/${paymentId}/record`)
+        .set(auth(ctx))
         .send({ amount: halfAmount, method: 'pix' })
         .expect(201);
 
@@ -209,11 +233,13 @@ describe('PaymentsController (e2e)', () => {
 
     it('should record full payment and mark as paid', async () => {
       const res = await request(ctx.httpServer)
-        .get(`/api/payments/${paymentId}`);
+        .get(`/api/payments/${paymentId}`)
+        .set(auth(ctx));
       const remaining = Number(res.body.remainingAmount);
 
       const payRes = await request(ctx.httpServer)
         .post(`/api/payments/${paymentId}/record`)
+        .set(auth(ctx))
         .send({ amount: remaining, method: 'pix' })
         .expect(201);
 
@@ -226,6 +252,7 @@ describe('PaymentsController (e2e)', () => {
 
       await request(ctx.httpServer)
         .post(`/api/payments/${pid}/record`)
+        .set(auth(ctx))
         .send({ amount: 99999, method: 'pix' })
         .expect(400);
     });

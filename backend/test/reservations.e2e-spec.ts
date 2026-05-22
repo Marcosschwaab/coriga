@@ -5,11 +5,14 @@ describe('ReservationsController (e2e)', () => {
   let residentId: number;
   let inactiveResidentId: number;
 
+  const auth = (t: TestContext) => ({ Authorization: `Bearer ${t.adminToken}` });
+
   beforeAll(async () => {
     ctx = await setupTestApp();
 
     const res = await request(ctx.httpServer)
       .post('/api/residents')
+      .set(auth(ctx))
       .send({
         name: 'Active Resident',
         phone: '1111111111',
@@ -20,6 +23,7 @@ describe('ReservationsController (e2e)', () => {
 
     const inactiveRes = await request(ctx.httpServer)
       .post('/api/residents')
+      .set(auth(ctx))
       .send({
         name: 'Inactive Resident',
         phone: '2222222222',
@@ -30,6 +34,7 @@ describe('ReservationsController (e2e)', () => {
 
     await request(ctx.httpServer)
       .patch(`/api/residents/${inactiveResidentId}`)
+      .set(auth(ctx))
       .send({ isActive: false });
   });
 
@@ -41,6 +46,7 @@ describe('ReservationsController (e2e)', () => {
     it('should create a reservation successfully', async () => {
       const res = await request(ctx.httpServer)
         .post('/api/reservations')
+        .set(auth(ctx))
         .send({
           residentId,
           date: '2026-06-01',
@@ -60,6 +66,7 @@ describe('ReservationsController (e2e)', () => {
     it('should reject duplicate date', async () => {
       await request(ctx.httpServer)
         .post('/api/reservations')
+        .set(auth(ctx))
         .send({
           residentId,
           date: '2026-06-15',
@@ -68,6 +75,7 @@ describe('ReservationsController (e2e)', () => {
 
       await request(ctx.httpServer)
         .post('/api/reservations')
+        .set(auth(ctx))
         .send({
           residentId,
           date: '2026-06-15',
@@ -78,6 +86,7 @@ describe('ReservationsController (e2e)', () => {
     it('should reject reservation for inactive resident', async () => {
       await request(ctx.httpServer)
         .post('/api/reservations')
+        .set(auth(ctx))
         .send({
           residentId: inactiveResidentId,
           date: '2026-07-01',
@@ -88,6 +97,7 @@ describe('ReservationsController (e2e)', () => {
     it('should reject reservation for non-existent resident', async () => {
       await request(ctx.httpServer)
         .post('/api/reservations')
+        .set(auth(ctx))
         .send({
           residentId: 99999,
           date: '2026-08-01',
@@ -98,6 +108,7 @@ describe('ReservationsController (e2e)', () => {
     it('should reject missing date', async () => {
       await request(ctx.httpServer)
         .post('/api/reservations')
+        .set(auth(ctx))
         .send({ residentId })
         .expect(400);
     });
@@ -105,6 +116,7 @@ describe('ReservationsController (e2e)', () => {
     it('should create reservation for weekend with correct dayType', async () => {
       const res = await request(ctx.httpServer)
         .post('/api/reservations')
+        .set(auth(ctx))
         .send({
           residentId,
           date: '2026-06-07',
@@ -117,10 +129,12 @@ describe('ReservationsController (e2e)', () => {
     it('should create reservation for holiday with correct dayType and price', async () => {
       await request(ctx.httpServer)
         .post('/api/holidays')
+        .set(auth(ctx))
         .send({ name: 'Test Holiday', date: '2026-06-20', type: 'national' });
 
       const res = await request(ctx.httpServer)
         .post('/api/reservations')
+        .set(auth(ctx))
         .send({
           residentId,
           date: '2026-06-20',
@@ -133,6 +147,7 @@ describe('ReservationsController (e2e)', () => {
     it('should create a payment record automatically', async () => {
       const res = await request(ctx.httpServer)
         .post('/api/reservations')
+        .set(auth(ctx))
         .send({
           residentId,
           date: '2026-06-25',
@@ -148,36 +163,40 @@ describe('ReservationsController (e2e)', () => {
     it('should return all reservations', async () => {
       const res = await request(ctx.httpServer)
         .get('/api/reservations')
+        .set(auth(ctx))
         .expect(200);
 
-      expect(Array.isArray(res.body)).toBe(true);
-      expect(res.body.length).toBeGreaterThanOrEqual(1);
+      expect(Array.isArray(res.body.data)).toBe(true);
+      expect(res.body.data.length).toBeGreaterThanOrEqual(1);
     });
 
     it('should filter reservations by month', async () => {
       const res = await request(ctx.httpServer)
         .get('/api/reservations?month=2026-06')
+        .set(auth(ctx))
         .expect(200);
 
-      expect(res.body.every((r: any) => r.date.startsWith('2026-06'))).toBe(true);
+      expect(res.body.data.every((r: any) => r.date.startsWith('2026-06'))).toBe(true);
     });
 
     it('should filter reservations by status', async () => {
       const res = await request(ctx.httpServer)
         .get('/api/reservations?status=reserved')
+        .set(auth(ctx))
         .expect(200);
 
-      expect(res.body.every((r: any) => r.status === 'reserved')).toBe(true);
+      expect(res.body.data.every((r: any) => r.status === 'reserved')).toBe(true);
     });
 
     it('should include resident and payment relations', async () => {
       const res = await request(ctx.httpServer)
         .get('/api/reservations?month=2026-06')
+        .set(auth(ctx))
         .expect(200);
 
-      if (res.body.length > 0) {
-        expect(res.body[0]).toHaveProperty('resident');
-        expect(res.body[0]).toHaveProperty('payment');
+      if (res.body.data.length > 0) {
+        expect(res.body.data[0]).toHaveProperty('resident');
+        expect(res.body.data[0]).toHaveProperty('payment');
       }
     });
   });
@@ -186,6 +205,7 @@ describe('ReservationsController (e2e)', () => {
     it('should return reservations within date range', async () => {
       const res = await request(ctx.httpServer)
         .get('/api/reservations/range?startDate=2026-06-01&endDate=2026-06-30')
+        .set(auth(ctx))
         .expect(200);
 
       expect(Array.isArray(res.body)).toBe(true);
@@ -198,6 +218,7 @@ describe('ReservationsController (e2e)', () => {
     beforeAll(async () => {
       const res = await request(ctx.httpServer)
         .post('/api/reservations')
+        .set(auth(ctx))
         .send({
           residentId,
           date: '2026-07-10',
@@ -208,6 +229,7 @@ describe('ReservationsController (e2e)', () => {
     it('should return a reservation by id', async () => {
       const res = await request(ctx.httpServer)
         .get(`/api/reservations/${reservationId}`)
+        .set(auth(ctx))
         .expect(200);
 
       expect(res.body.id).toBe(reservationId);
@@ -216,6 +238,7 @@ describe('ReservationsController (e2e)', () => {
     it('should return 404 for non-existent reservation', async () => {
       await request(ctx.httpServer)
         .get('/api/reservations/99999')
+        .set(auth(ctx))
         .expect(404);
     });
   });
@@ -226,6 +249,7 @@ describe('ReservationsController (e2e)', () => {
     beforeAll(async () => {
       const res = await request(ctx.httpServer)
         .post('/api/reservations')
+        .set(auth(ctx))
         .send({
           residentId,
           date: '2026-08-01',
@@ -237,6 +261,7 @@ describe('ReservationsController (e2e)', () => {
     it('should update reservation notes', async () => {
       const res = await request(ctx.httpServer)
         .patch(`/api/reservations/${reservationId}`)
+        .set(auth(ctx))
         .send({ notes: 'Updated notes' })
         .expect(200);
 
@@ -246,6 +271,7 @@ describe('ReservationsController (e2e)', () => {
     it('should update reservation status', async () => {
       const res = await request(ctx.httpServer)
         .patch(`/api/reservations/${reservationId}`)
+        .set(auth(ctx))
         .send({ status: 'completed' })
         .expect(200);
 
@@ -259,6 +285,7 @@ describe('ReservationsController (e2e)', () => {
     beforeAll(async () => {
       const res = await request(ctx.httpServer)
         .post('/api/reservations')
+        .set(auth(ctx))
         .send({
           residentId,
           date: '2026-09-01',
@@ -269,6 +296,7 @@ describe('ReservationsController (e2e)', () => {
     it('should cancel a reservation', async () => {
       const res = await request(ctx.httpServer)
         .post(`/api/reservations/${reservationId}/cancel`)
+        .set(auth(ctx))
         .expect(201);
 
       expect(res.body.status).toBe('cancelled');
@@ -277,6 +305,7 @@ describe('ReservationsController (e2e)', () => {
     it('should cancel the associated payment', async () => {
       const res = await request(ctx.httpServer)
         .get(`/api/reservations/${reservationId}`)
+        .set(auth(ctx))
         .expect(200);
 
       expect(res.body.payment.status).toBe('cancelled');
@@ -289,6 +318,7 @@ describe('ReservationsController (e2e)', () => {
     beforeAll(async () => {
       const res = await request(ctx.httpServer)
         .post('/api/reservations')
+        .set(auth(ctx))
         .send({
           residentId,
           date: '2026-10-01',
@@ -299,10 +329,12 @@ describe('ReservationsController (e2e)', () => {
     it('should cancel reservation on delete', async () => {
       await request(ctx.httpServer)
         .delete(`/api/reservations/${reservationId}`)
+        .set(auth(ctx))
         .expect(200);
 
       const res = await request(ctx.httpServer)
         .get(`/api/reservations/${reservationId}`)
+        .set(auth(ctx))
         .expect(200);
 
       expect(res.body.status).toBe('cancelled');

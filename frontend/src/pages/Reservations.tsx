@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../services/api';
+import { formatCurrency } from '../services/currency';
 import { Reservation, Resident } from '../types';
 import { Modal } from '../components/Modal';
+import { Loading } from '../components/Loading';
+import { Pagination } from '../components/Pagination';
 import { useToast } from '../components/Toast';
 import { FileText, Plus, Download, Pencil, XCircle, Filter, Calendar, User, Tag, DollarSign } from 'lucide-react';
 
@@ -11,14 +14,24 @@ export function ReservationsPage() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [residents, setResidents] = useState<Resident[]>([]);
   const [filterStatus, setFilterStatus] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null);
   const { showToast } = useToast();
 
   useEffect(() => {
-    api.reservations.list(undefined, filterStatus || undefined).then(setReservations);
-    api.residents.list().then(setResidents);
-  }, [filterStatus]);
+    setLoading(true);
+    Promise.all([
+      api.reservations.list(undefined, filterStatus || undefined, page),
+      api.residents.list(),
+    ]).then(([res, resi]) => {
+      setReservations(res.data);
+      setTotalPages(res.totalPages);
+      setResidents(resi.data);
+    }).finally(() => setLoading(false));
+  }, [filterStatus, page]);
 
   const handleSave = async (data: Partial<Reservation>) => {
     try {
@@ -31,7 +44,10 @@ export function ReservationsPage() {
       }
       setShowModal(false);
       setEditingReservation(null);
-      api.reservations.list(undefined, filterStatus || undefined).then(setReservations);
+      api.reservations.list(undefined, filterStatus || undefined, page).then((res) => {
+        setReservations(res.data);
+        setTotalPages(res.totalPages);
+      });
     } catch (err: any) {
       showToast(err.message, 'error');
     }
@@ -42,7 +58,10 @@ export function ReservationsPage() {
     try {
       await api.reservations.cancel(id);
       showToast(t('reservations.cancelledSuccess'));
-      api.reservations.list(undefined, filterStatus || undefined).then(setReservations);
+      api.reservations.list(undefined, filterStatus || undefined, page).then((res) => {
+        setReservations(res.data);
+        setTotalPages(res.totalPages);
+      });
     } catch (err: any) {
       showToast(err.message, 'error');
     }
@@ -69,6 +88,8 @@ export function ReservationsPage() {
     a.click();
     URL.revokeObjectURL(url);
   };
+
+  if (loading) return <Loading text={t('reservations.title')} />;
 
   return (
     <div>
@@ -138,7 +159,7 @@ export function ReservationsPage() {
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-1.5">
                     <DollarSign className="w-4 h-4 text-gray-400" />
-                    ${Number(res.price).toFixed(2)}
+                    {formatCurrency(res.price)}
                   </div>
                 </td>
                 <td className="py-3 px-4">
@@ -175,6 +196,8 @@ export function ReservationsPage() {
           <p className="text-center py-8 text-gray-500">{t('reservations.noReservations')}</p>
         )}
       </div>
+
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
 
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditingReservation(null); }} title={editingReservation ? t('reservations.editReservation') : t('reservations.newReservation')}>
         <ReservationForm reservation={editingReservation} residents={residents} onSave={handleSave} onCancel={() => { setShowModal(false); setEditingReservation(null); }} />

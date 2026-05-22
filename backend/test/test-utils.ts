@@ -8,6 +8,7 @@ import { PaymentsModule } from '../src/modules/payments/payments.module';
 import { HolidaysModule } from '../src/modules/holidays/holidays.module';
 import { PricingConfigModule } from '../src/modules/pricing-config/pricing-config.module';
 import { DashboardModule } from '../src/modules/dashboard/dashboard.module';
+import { AuthModule } from '../src/modules/auth/auth.module';
 
 export function createTestingModule(): TestingModuleBuilder {
   return Test.createTestingModule({
@@ -19,6 +20,7 @@ export function createTestingModule(): TestingModuleBuilder {
         synchronize: true,
         dropSchema: true,
       }),
+      AuthModule,
       ResidentsModule,
       ReservationsModule,
       PaymentsModule,
@@ -32,6 +34,8 @@ export function createTestingModule(): TestingModuleBuilder {
 export interface TestContext {
   app: INestApplication;
   httpServer: any;
+  adminToken: string;
+  userToken: string;
 }
 
 export async function setupTestApp(): Promise<TestContext> {
@@ -47,7 +51,21 @@ export async function setupTestApp(): Promise<TestContext> {
   );
   await app.init();
   const httpServer = app.getHttpServer();
-  return { app, httpServer };
+
+  const adminRes = await supertest(httpServer)
+    .post('/api/auth/login')
+    .send({ username: 'admin', password: 'admin123' });
+
+  const userRes = await supertest(httpServer)
+    .post('/api/auth/login')
+    .send({ username: 'user', password: 'user123' });
+
+  return {
+    app,
+    httpServer,
+    adminToken: adminRes.body.access_token,
+    userToken: userRes.body.access_token,
+  };
 }
 
 export async function teardownTestApp(ctx: TestContext): Promise<void> {
