@@ -9,6 +9,8 @@ import { HolidaysModule } from '../src/modules/holidays/holidays.module';
 import { PricingConfigModule } from '../src/modules/pricing-config/pricing-config.module';
 import { DashboardModule } from '../src/modules/dashboard/dashboard.module';
 import { AuthModule } from '../src/modules/auth/auth.module';
+import { NoticesModule } from '../src/modules/notices/notices.module';
+import { GuestsModule } from '../src/modules/guests/guests.module';
 
 export function createTestingModule(): TestingModuleBuilder {
   return Test.createTestingModule({
@@ -27,6 +29,8 @@ export function createTestingModule(): TestingModuleBuilder {
       HolidaysModule,
       PricingConfigModule,
       DashboardModule,
+      NoticesModule,
+      GuestsModule,
     ],
   });
 }

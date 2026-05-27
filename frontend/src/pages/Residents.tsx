@@ -13,19 +13,29 @@ export function ResidentsPage() {
   const [residents, setResidents] = useState<Resident[]>([]);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(50);
   const [totalPages, setTotalPages] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [editingResident, setEditingResident] = useState<Resident | null>(null);
   const { showToast } = useToast();
 
-  useEffect(() => {
-    setLoading(true);
-    api.residents.list(search, page).then((res) => {
+  const fetchResidents = (p: number, l: number) => {
+    return api.residents.list(search, p, l).then((res) => {
       setResidents(res.data);
       setTotalPages(res.totalPages);
-    }).finally(() => setLoading(false));
-  }, [search, page]);
+    });
+  };
+
+  useEffect(() => {
+    setLoading(true);
+    fetchResidents(page, limit).finally(() => setLoading(false));
+  }, [search, page, limit]);
+
+  const handleLimitChange = (newLimit: number) => {
+    setLimit(newLimit);
+    setPage(1);
+  };
 
   const handleSave = async (data: Partial<Resident>) => {
     try {
@@ -38,10 +48,7 @@ export function ResidentsPage() {
       }
       setShowModal(false);
       setEditingResident(null);
-      api.residents.list(search, page).then((res) => {
-        setResidents(res.data);
-        setTotalPages(res.totalPages);
-      });
+      fetchResidents(page, limit);
     } catch (err: any) {
       showToast(err.message, 'error');
     }
@@ -52,10 +59,7 @@ export function ResidentsPage() {
     try {
       await api.residents.remove(id);
       showToast(t('residents.deactivatedSuccess'));
-      api.residents.list(search, page).then((res) => {
-        setResidents(res.data);
-        setTotalPages(res.totalPages);
-      });
+      fetchResidents(page, limit);
     } catch (err: any) {
       showToast(err.message, 'error');
     }
@@ -157,7 +161,7 @@ export function ResidentsPage() {
         )}
       </div>
 
-      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+      <Pagination page={page} totalPages={totalPages} limit={limit} onPageChange={setPage} onLimitChange={handleLimitChange} />
 
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditingResident(null); }} title={editingResident ? t('residents.editResident') : t('residents.addResident')}>
         <ResidentForm resident={editingResident} onSave={handleSave} onCancel={() => { setShowModal(false); setEditingResident(null); }} />

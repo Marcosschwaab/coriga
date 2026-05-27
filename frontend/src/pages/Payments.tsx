@@ -14,19 +14,15 @@ export function PaymentsPage() {
   const [payments, setPayments] = useState<(Payment & { reservation?: Reservation })[]>([]);
   const [filterStatus, setFilterStatus] = useState('');
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(50);
   const [totalPages, setTotalPages] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const { showToast } = useToast();
 
-  useEffect(() => {
-    setLoading(true);
-    loadPayments().finally(() => setLoading(false));
-  }, [filterStatus, page]);
-
-  const loadPayments = async () => {
-    const result = await api.payments.list(filterStatus || undefined, page);
+  const loadPayments = async (p: number, l: number) => {
+    const result = await api.payments.list(filterStatus || undefined, p, l);
     setTotalPages(result.totalPages);
     const withReservations = await Promise.all(
       result.data.map(async (p) => {
@@ -41,13 +37,23 @@ export function PaymentsPage() {
     setPayments(withReservations as any);
   };
 
+  useEffect(() => {
+    setLoading(true);
+    loadPayments(page, limit).finally(() => setLoading(false));
+  }, [filterStatus, page, limit]);
+
+  const handleLimitChange = (newLimit: number) => {
+    setLimit(newLimit);
+    setPage(1);
+  };
+
   const handleRecordPayment = async (id: number, amount: number, method: string) => {
     try {
       await api.payments.recordPayment(id, amount, method);
       showToast(t('payments.recordedSuccess'));
       setShowModal(false);
       setSelectedPayment(null);
-      loadPayments();
+      loadPayments(page, limit);
     } catch (err: any) {
       showToast(err.message, 'error');
     }
@@ -160,7 +166,7 @@ export function PaymentsPage() {
         )}
       </div>
 
-      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+      <Pagination page={page} totalPages={totalPages} limit={limit} onPageChange={setPage} onLimitChange={handleLimitChange} />
 
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); setSelectedPayment(null); }} title={t('payments.recordPayment')}>
         {selectedPayment && (

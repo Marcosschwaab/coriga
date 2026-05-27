@@ -15,6 +15,7 @@ export function ReservationsPage() {
   const [residents, setResidents] = useState<Resident[]>([]);
   const [filterStatus, setFilterStatus] = useState('');
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(50);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -22,17 +23,26 @@ export function ReservationsPage() {
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const { showToast } = useToast();
 
-  useEffect(() => {
-    setLoading(true);
-    Promise.all([
-      api.reservations.list(undefined, filterStatus || undefined, page),
+  const fetchData = (p: number, l: number) => {
+    return Promise.all([
+      api.reservations.list(undefined, filterStatus || undefined, p, l),
       api.residents.list(),
     ]).then(([res, resi]) => {
       setReservations(res.data);
       setTotalPages(res.totalPages);
       setResidents(resi.data);
-    }).finally(() => setLoading(false));
-  }, [filterStatus, page]);
+    });
+  };
+
+  useEffect(() => {
+    setLoading(true);
+    fetchData(page, limit).finally(() => setLoading(false));
+  }, [filterStatus, page, limit]);
+
+  const handleLimitChange = (newLimit: number) => {
+    setLimit(newLimit);
+    setPage(1);
+  };
 
   const handleSave = async (data: Partial<Reservation>) => {
     try {
@@ -45,10 +55,7 @@ export function ReservationsPage() {
       }
       setShowModal(false);
       setEditingReservation(null);
-      api.reservations.list(undefined, filterStatus || undefined, page).then((res) => {
-        setReservations(res.data);
-        setTotalPages(res.totalPages);
-      });
+      fetchData(page, limit);
     } catch (err: any) {
       showToast(err.message, 'error');
     }
@@ -60,10 +67,7 @@ export function ReservationsPage() {
       await api.reservations.cancel(id);
       showToast(t('reservations.cancelledSuccess'));
       setExpandedId(null);
-      api.reservations.list(undefined, filterStatus || undefined, page).then((res) => {
-        setReservations(res.data);
-        setTotalPages(res.totalPages);
-      });
+      fetchData(page, limit);
     } catch (err: any) {
       showToast(err.message, 'error');
     }
@@ -225,7 +229,7 @@ export function ReservationsPage() {
         )}
       </div>
 
-      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+      <Pagination page={page} totalPages={totalPages} limit={limit} onPageChange={setPage} onLimitChange={handleLimitChange} />
 
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditingReservation(null); }} title={editingReservation ? t('reservations.editReservation') : t('reservations.newReservation')}>
         <ReservationForm reservation={editingReservation} residents={residents} onSave={handleSave} onCancel={() => { setShowModal(false); setEditingReservation(null); }} />
