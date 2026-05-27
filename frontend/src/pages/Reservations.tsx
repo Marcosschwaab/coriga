@@ -216,25 +216,55 @@ function ReservationForm({ reservation, residents, onSave, onCancel }: {
   const [residentId, setResidentId] = useState(reservation?.residentId?.toString() || '');
   const [date, setDate] = useState(reservation?.date || '');
   const [notes, setNotes] = useState(reservation?.notes || '');
+  const [search, setSearch] = useState('');
+  const [open, setOpen] = useState(false);
+
+  const activeResidents = residents.filter((r) => r.isActive);
+  const filtered = activeResidents.filter((r) =>
+    !search || r.name.toLowerCase().includes(search.toLowerCase()) || r.address.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const selected = activeResidents.find((r) => r.id === Number(residentId));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({ residentId: Number(residentId), date, notes });
+    if (residentId) onSave({ residentId: Number(residentId), date, notes });
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className="label">{t('calendar.resident')}</label>
+      <div className="relative">
+        <label className="label">{t('calendar.selectResident')}</label>
         <div className="relative">
           <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <select value={residentId} onChange={(e) => setResidentId(e.target.value)} className="input pl-10" required>
-            <option value="">{t('reservations.selectResident')}</option>
-            {residents.filter((r) => r.isActive).map((r) => (
-              <option key={r.id} value={r.id}>{r.name}</option>
-            ))}
-          </select>
+          <input
+            value={open ? search : (selected ? `${selected.name} - ${selected.address}` : '')}
+            onChange={(e) => { setSearch(e.target.value); setOpen(true); }}
+            onFocus={() => { setOpen(true); setSearch(''); }}
+            onBlur={() => setTimeout(() => setOpen(false), 200)}
+            placeholder={t('reservations.selectResident')}
+            className="input pl-10"
+            required
+            autoComplete="off"
+          />
         </div>
+        {open && (
+          <div className="absolute z-10 top-full mt-1 left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+            {filtered.length === 0 ? (
+              <p className="p-3 text-sm text-gray-400">{t('common.noResults')}</p>
+            ) : filtered.map((r) => (
+              <button
+                key={r.id}
+                type="button"
+                className={`w-full text-left px-3 py-2.5 text-sm hover:bg-indigo-50 transition-colors ${Number(residentId) === r.id ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700'}`}
+                onMouseDown={() => { setResidentId(String(r.id)); setSearch(''); setOpen(false); }}
+              >
+                <span className="font-medium">{r.name}</span>
+                <span className="text-gray-400 ml-2">{r.address}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
       <div>
         <label className="label">{t('common.date')}</label>
