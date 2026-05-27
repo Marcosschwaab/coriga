@@ -11,6 +11,7 @@ import { DashboardModule } from '../src/modules/dashboard/dashboard.module';
 import { AuthModule } from '../src/modules/auth/auth.module';
 import { NoticesModule } from '../src/modules/notices/notices.module';
 import { GuestsModule } from '../src/modules/guests/guests.module';
+import { PackagesModule } from '../src/modules/packages/packages.module';
 
 export function createTestingModule(): TestingModuleBuilder {
   return Test.createTestingModule({
@@ -31,6 +32,7 @@ export function createTestingModule(): TestingModuleBuilder {
       DashboardModule,
       NoticesModule,
       GuestsModule,
+      PackagesModule,
     ],
   });
 }
@@ -40,6 +42,7 @@ export interface TestContext {
   httpServer: any;
   adminToken: string;
   userToken: string;
+  conciergeToken: string;
 }
 
 export async function setupTestApp(): Promise<TestContext> {
@@ -64,11 +67,16 @@ export async function setupTestApp(): Promise<TestContext> {
     .post('/api/auth/login')
     .send({ username: 'user', password: 'user123' });
 
+  const conciergeRes = await supertest(httpServer)
+    .post('/api/auth/login')
+    .send({ username: 'concierge', password: 'concierge123' });
+
   return {
     app,
     httpServer,
     adminToken: adminRes.body.access_token,
     userToken: userRes.body.access_token,
+    conciergeToken: conciergeRes.body.access_token,
   };
 }
 

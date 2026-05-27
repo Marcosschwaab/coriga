@@ -41,6 +41,14 @@ const adminNavItems = [
   { path: '/pricing', label: 'nav.pricing', icon: Settings },
 ];
 
+const conciergeNavItems = [
+  { path: '/calendar', label: 'nav.calendar', icon: CalendarDays },
+  { path: '/residents', label: 'nav.residents', icon: Users },
+  { path: '/reservations', label: 'nav.reservations', icon: FileText },
+  { path: '/notices', label: 'nav.notices', icon: Megaphone },
+  { path: '/packages', label: 'nav.packages', icon: Package },
+];
+
 const userNavItems = [
   { path: '/calendar', label: 'nav.calendar', icon: CalendarDays },
   { path: '/notices', label: 'nav.notices', icon: Megaphone },
@@ -53,7 +61,7 @@ function Sidebar() {
   const { user, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const navItems = user?.role === 'admin' ? adminNavItems : userNavItems;
+  const navItems = user?.role === 'admin' ? adminNavItems : user?.role === 'concierge' ? conciergeNavItems : userNavItems;
 
   return (
     <>
@@ -76,7 +84,7 @@ function Sidebar() {
             <p className="font-medium text-gray-800 flex items-center justify-between">
               <span>{user.username}</span>
               <span className="text-xs bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full capitalize">
-                {user.role}
+                {t(`common.${user.role}`)}
               </span>
             </p>
           </div>

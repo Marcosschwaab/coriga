@@ -27,7 +27,7 @@ export class ResidentsController {
   }
 
   @Get()
-  @Roles('admin', 'user')
+  @Roles('admin', 'user', 'concierge')
   findAll(
     @Query('search') search?: string,
     @Query('page') page?: number,
@@ -37,7 +37,7 @@ export class ResidentsController {
   }
 
   @Get(':id')
-  @Roles('admin', 'user')
+  @Roles('admin', 'user', 'concierge')
   findOne(@Param('id') id: string) {
     return this.residentsService.findOne(+id);
   }

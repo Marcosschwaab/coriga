@@ -39,5 +39,19 @@ export class SeedService implements OnApplicationBootstrap {
       );
       console.log('[Seed] Regular user created (user / user123)');
     }
+
+    const concierge = await this.userRepository.findOne({ where: { username: 'concierge' } });
+    if (!concierge) {
+      const hashed = await bcrypt.hash('concierge123', 10);
+      await this.userRepository.save(
+        this.userRepository.create({
+          username: 'concierge',
+          email: 'concierge@coriga.com',
+          password: hashed,
+          role: UserRole.CONCIERGE,
+        }),
+      );
+      console.log('[Seed] Concierge user created (concierge / concierge123)');
+    }
   }
 }

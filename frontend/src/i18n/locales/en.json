@@ -2,6 +2,9 @@
   "common": {
     "loading": "Loading...",
     "noData": "No data available",
+    "admin": "Admin",
+    "user": "User",
+    "concierge": "Concierge",
     "cancel": "Cancel",
     "create": "Create",
     "update": "Update",

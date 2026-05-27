@@ -4,6 +4,7 @@ import { api } from '../services/api';
 import { formatCurrency } from '../services/currency';
 import { Reservation, Resident, Guest } from '../types';
 import { Modal } from '../components/Modal';
+import { useAuth } from '../services/auth';
 import { Loading } from '../components/Loading';
 import { Pagination } from '../components/Pagination';
 import { useToast } from '../components/Toast';
@@ -22,6 +23,8 @@ export function ReservationsPage() {
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null);
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const { showToast } = useToast();
+  const { user } = useAuth();
+  const isConcierge = user?.role === 'concierge';
 
   const fetchData = (p: number, l: number) => {
     return Promise.all([
@@ -109,14 +112,18 @@ export function ReservationsPage() {
           {t('reservations.title')}
         </h1>
         <div className="flex gap-3">
-          <button onClick={exportCSV} className="btn-secondary flex items-center gap-2">
-            <Download className="w-4 h-4" />
-            {t('reservations.exportCSV')}
-          </button>
-          <button onClick={() => { setEditingReservation(null); setShowModal(true); }} className="btn-primary flex items-center gap-2">
-            <Plus className="w-4 h-4" />
-            {t('reservations.newReservation')}
-          </button>
+          {!isConcierge && (
+            <>
+              <button onClick={exportCSV} className="btn-secondary flex items-center gap-2">
+                <Download className="w-4 h-4" />
+                {t('reservations.exportCSV')}
+              </button>
+              <button onClick={() => { setEditingReservation(null); setShowModal(true); }} className="btn-primary flex items-center gap-2">
+                <Plus className="w-4 h-4" />
+                {t('reservations.newReservation')}
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -139,9 +146,9 @@ export function ReservationsPage() {
               <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">{t('common.date')}</th>
               <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">{t('calendar.resident')}</th>
               <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">{t('common.type')}</th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">{t('common.price')}</th>
+              {!isConcierge && <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">{t('common.price')}</th>}
               <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">{t('common.status')}</th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">{t('nav.payments')}</th>
+              {!isConcierge && <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">{t('nav.payments')}</th>}
               <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">{t('common.actions')}</th>
             </tr>
           </thead>
@@ -167,36 +174,42 @@ export function ReservationsPage() {
                       <span className="capitalize">{res.dayType}</span>
                     </div>
                   </td>
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-1.5">
-                      <DollarSign className="w-4 h-4 text-gray-400" />
-                      {formatCurrency(res.price)}
-                    </div>
-                  </td>
+                  {!isConcierge && (
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-1.5">
+                        <DollarSign className="w-4 h-4 text-gray-400" />
+                        {formatCurrency(res.price)}
+                      </div>
+                    </td>
+                  )}
                   <td className="py-3 px-4">
                     <span className={`badge ${res.status === 'reserved' ? 'badge-info' : res.status === 'cancelled' ? 'badge-danger' : 'badge-success'}`}>
                       {res.status}
                     </span>
                   </td>
-                  <td className="py-3 px-4">
-                    {res.payment ? (
-                      <span className={`badge ${res.payment.status === 'paid' ? 'badge-success' : res.payment.status === 'pending' ? 'badge-warning' : res.payment.status === 'partially_paid' ? 'badge-info' : 'badge-danger'}`}>
-                        {res.payment.status}
-                      </span>
-                    ) : (
-                      <span className="badge badge-gray">{t('reservations.na')}</span>
-                    )}
-                  </td>
+                  {!isConcierge && (
+                    <td className="py-3 px-4">
+                      {res.payment ? (
+                        <span className={`badge ${res.payment.status === 'paid' ? 'badge-success' : res.payment.status === 'pending' ? 'badge-warning' : res.payment.status === 'partially_paid' ? 'badge-info' : 'badge-danger'}`}>
+                          {res.payment.status}
+                        </span>
+                      ) : (
+                        <span className="badge badge-gray">{t('reservations.na')}</span>
+                      )}
+                    </td>
+                  )}
                   <td className="py-3 px-4">
                     <div className="flex gap-1">
                       <button onClick={() => toggleExpand(res.id)} className="px-2 py-1.5 text-sm font-medium text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors flex items-center gap-1">
                         {expandedId === res.id ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         <span>{t('common.view')}</span>
                       </button>
-                      <button onClick={() => { setEditingReservation(res); setShowModal(true); }} className="p-1.5 hover:bg-indigo-50 rounded-lg transition-colors text-indigo-600" title={t('common.edit')}>
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      {res.status !== 'cancelled' && (
+                      {!isConcierge && (
+                        <button onClick={() => { setEditingReservation(res); setShowModal(true); }} className="p-1.5 hover:bg-indigo-50 rounded-lg transition-colors text-indigo-600" title={t('common.edit')}>
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                      )}
+                      {!isConcierge && res.status !== 'cancelled' && (
                         <button onClick={() => handleCancel(res.id)} className="p-1.5 hover:bg-red-50 rounded-lg transition-colors text-red-600" title={t('common.cancel')}>
                           <XCircle className="w-4 h-4" />
                         </button>
@@ -206,9 +219,10 @@ export function ReservationsPage() {
                 </tr>
                 {expandedId === res.id && (
                   <tr>
-                    <td colSpan={7} className="p-0">
+                    <td colSpan={isConcierge ? 5 : 7} className="p-0">
                       <InlineReservationDetail
                         reservation={res}
+                        isConcierge={isConcierge}
                         onEdit={() => { setEditingReservation(res); setShowModal(true); }}
                         onCancel={() => handleCancel(res.id)}
                         onRefresh={() => {
@@ -239,8 +253,9 @@ export function ReservationsPage() {
   );
 }
 
-function InlineReservationDetail({ reservation, onEdit, onCancel, onRefresh }: {
+function InlineReservationDetail({ reservation, isConcierge, onEdit, onCancel, onRefresh }: {
   reservation: Reservation;
+  isConcierge?: boolean;
   onEdit: () => void;
   onCancel: () => void;
   onRefresh: () => void;
@@ -336,10 +351,12 @@ function InlineReservationDetail({ reservation, onEdit, onCancel, onRefresh }: {
                 {reservation.status}
               </span>
             </div>
-            <div>
-              <p className="text-gray-500">{t('common.price')}</p>
-              <p className="font-medium">{formatCurrency(reservation.price)}</p>
-            </div>
+            {!isConcierge && (
+              <div>
+                <p className="text-gray-500">{t('common.price')}</p>
+                <p className="font-medium">{formatCurrency(reservation.price)}</p>
+              </div>
+            )}
             {reservation.notes && (
               <div>
                 <p className="text-gray-500">{t('common.notes')}</p>
@@ -349,7 +366,7 @@ function InlineReservationDetail({ reservation, onEdit, onCancel, onRefresh }: {
           </div>
         </div>
 
-        {reservation.payment && (
+        {!isConcierge && reservation.payment && (
           <div className="bg-white rounded-lg p-4 space-y-3 shadow-sm">
             <h3 className="font-semibold text-gray-700 flex items-center gap-2">
               <DollarSign className="w-4 h-4" />
@@ -453,18 +470,20 @@ function InlineReservationDetail({ reservation, onEdit, onCancel, onRefresh }: {
         )}
       </div>
 
-      <div className="flex gap-3 pt-2">
-        <button type="button" onClick={onEdit} className="btn-primary flex items-center justify-center gap-2">
-          <Pencil className="w-4 h-4" />
-          {t('common.edit')}
-        </button>
-        {reservation.status !== 'cancelled' && (
-          <button type="button" onClick={onCancel} className="btn-danger flex items-center justify-center gap-2">
-            <XCircle className="w-4 h-4" />
-            {t('common.cancel')}
+      {!isConcierge && (
+        <div className="flex gap-3 pt-2">
+          <button type="button" onClick={onEdit} className="btn-primary flex items-center justify-center gap-2">
+            <Pencil className="w-4 h-4" />
+            {t('common.edit')}
           </button>
-        )}
-      </div>
+          {reservation.status !== 'cancelled' && (
+            <button type="button" onClick={onCancel} className="btn-danger flex items-center justify-center gap-2">
+              <XCircle className="w-4 h-4" />
+              {t('common.cancel')}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

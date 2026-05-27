@@ -22,13 +22,13 @@ export class PackagesController {
   constructor(private readonly packagesService: PackagesService) {}
 
   @Post('recipients')
-  @Roles('admin')
+  @Roles('admin', 'concierge')
   createRecipient(@Body() dto: CreateRecipientDto) {
     return this.packagesService.createRecipient(dto);
   }
 
   @Get('recipients')
-  @Roles('admin', 'user')
+  @Roles('admin', 'user', 'concierge')
   findAllRecipients(
     @Query('search') search?: string,
     @Query('page') page?: number,
@@ -38,31 +38,31 @@ export class PackagesController {
   }
 
   @Get('recipients/:id')
-  @Roles('admin', 'user')
+  @Roles('admin', 'user', 'concierge')
   findOneRecipient(@Param('id') id: string) {
     return this.packagesService.findOneRecipient(+id);
   }
 
   @Patch('recipients/:id')
-  @Roles('admin')
+  @Roles('admin', 'concierge')
   updateRecipient(@Param('id') id: string, @Body() dto: UpdateRecipientDto) {
     return this.packagesService.updateRecipient(+id, dto);
   }
 
   @Delete('recipients/:id')
-  @Roles('admin')
+  @Roles('admin', 'concierge')
   removeRecipient(@Param('id') id: string) {
     return this.packagesService.removeRecipient(+id);
   }
 
   @Post()
-  @Roles('admin')
+  @Roles('admin', 'concierge')
   createPackage(@Body() dto: CreatePackageOrderDto) {
     return this.packagesService.createPackage(dto);
   }
 
   @Get()
-  @Roles('admin', 'user')
+  @Roles('admin', 'user', 'concierge')
   findAllPackages(
     @Query('search') search?: string,
     @Query('page') page?: number,
@@ -72,19 +72,19 @@ export class PackagesController {
   }
 
   @Get(':id')
-  @Roles('admin', 'user')
+  @Roles('admin', 'user', 'concierge')
   findOnePackage(@Param('id') id: string) {
     return this.packagesService.findOnePackage(+id);
   }
 
   @Patch(':id')
-  @Roles('admin')
+  @Roles('admin', 'concierge')
   updatePackage(@Param('id') id: string, @Body() dto: UpdatePackageOrderDto) {
     return this.packagesService.updatePackage(+id, dto);
   }
 
   @Delete(':id')
-  @Roles('admin')
+  @Roles('admin', 'concierge')
   removePackage(@Param('id') id: string) {
     return this.packagesService.removePackage(+id);
   }

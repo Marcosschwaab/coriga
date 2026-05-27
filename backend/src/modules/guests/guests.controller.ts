@@ -20,31 +20,31 @@ export class GuestsController {
   constructor(private readonly guestsService: GuestsService) {}
 
   @Post()
-  @Roles('admin')
+  @Roles('admin', 'concierge')
   create(@Body() dto: CreateGuestDto) {
     return this.guestsService.create(dto);
   }
 
   @Get('reservation/:reservationId')
-  @Roles('admin', 'user')
+  @Roles('admin', 'user', 'concierge')
   findByReservation(@Param('reservationId') reservationId: string) {
     return this.guestsService.findByReservation(+reservationId);
   }
 
   @Get(':id')
-  @Roles('admin', 'user')
+  @Roles('admin', 'user', 'concierge')
   findOne(@Param('id') id: string) {
     return this.guestsService.findOne(+id);
   }
 
   @Patch(':id')
-  @Roles('admin')
+  @Roles('admin', 'concierge')
   update(@Param('id') id: string, @Body() dto: UpdateGuestDto) {
     return this.guestsService.update(+id, dto);
   }
 
   @Delete(':id')
-  @Roles('admin')
+  @Roles('admin', 'concierge')
   remove(@Param('id') id: string) {
     return this.guestsService.remove(+id);
   }

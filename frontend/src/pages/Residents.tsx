@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../services/api';
 import { Resident } from '../types';
 import { Modal } from '../components/Modal';
+import { useAuth } from '../services/auth';
 import { Loading } from '../components/Loading';
 import { Pagination } from '../components/Pagination';
 import { useToast } from '../components/Toast';
@@ -19,6 +20,8 @@ export function ResidentsPage() {
   const [loading, setLoading] = useState(true);
   const [editingResident, setEditingResident] = useState<Resident | null>(null);
   const { showToast } = useToast();
+  const { user } = useAuth();
+  const isConcierge = user?.role === 'concierge';
 
   const fetchResidents = (p: number, l: number) => {
     return api.residents.list(search, p, l).then((res) => {
@@ -74,10 +77,12 @@ export function ResidentsPage() {
           <Users className="w-7 h-7 text-indigo-600" />
           {t('residents.title')}
         </h1>
-        <button onClick={() => { setEditingResident(null); setShowModal(true); }} className="btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          {t('residents.addResident')}
-        </button>
+        {!isConcierge && (
+          <button onClick={() => { setEditingResident(null); setShowModal(true); }} className="btn-primary flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            {t('residents.addResident')}
+          </button>
+        )}
       </div>
 
       <div className="card mb-6">
@@ -134,21 +139,25 @@ export function ResidentsPage() {
                 </td>
                 <td className="py-3 px-4">
                   <div className="flex gap-2">
-                    <button
-                      onClick={() => { setEditingResident(resident); setShowModal(true); }}
-                      className="p-1.5 hover:bg-indigo-50 rounded-lg transition-colors text-indigo-600"
-                      title={t('common.edit')}
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    {resident.isActive && (
-                      <button
-                        onClick={() => handleDelete(resident.id)}
-                        className="p-1.5 hover:bg-red-50 rounded-lg transition-colors text-red-600"
-                        title={t('residents.deactivate')}
-                      >
-                        <UserMinus className="w-4 h-4" />
-                      </button>
+                    {!isConcierge && (
+                      <>
+                        <button
+                          onClick={() => { setEditingResident(resident); setShowModal(true); }}
+                          className="p-1.5 hover:bg-indigo-50 rounded-lg transition-colors text-indigo-600"
+                          title={t('common.edit')}
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        {resident.isActive && (
+                          <button
+                            onClick={() => handleDelete(resident.id)}
+                            className="p-1.5 hover:bg-red-50 rounded-lg transition-colors text-red-600"
+                            title={t('residents.deactivate')}
+                          >
+                            <UserMinus className="w-4 h-4" />
+                          </button>
+                        )}
+                      </>
                     )}
                   </div>
                 </td>

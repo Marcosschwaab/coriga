@@ -27,7 +27,7 @@ export class ReservationsController {
   }
 
   @Get()
-  @Roles('admin', 'user')
+  @Roles('admin', 'user', 'concierge')
   findAll(
     @Query('month') month?: string,
     @Query('status') status?: string,
@@ -38,7 +38,7 @@ export class ReservationsController {
   }
 
   @Get('range')
-  @Roles('admin', 'user')
+  @Roles('admin', 'user', 'concierge')
   findByDateRange(
     @Query('startDate') startDate: string,
     @Query('endDate') endDate: string,
@@ -47,7 +47,7 @@ export class ReservationsController {
   }
 
   @Get(':id')
-  @Roles('admin', 'user')
+  @Roles('admin', 'user', 'concierge')
   findOne(@Param('id') id: string) {
     return this.reservationsService.findOne(+id);
   }

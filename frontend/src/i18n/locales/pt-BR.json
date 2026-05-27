@@ -2,6 +2,9 @@
   "common": {
     "loading": "Carregando...",
     "noData": "Nenhum dado disponível",
+    "admin": "Administrador",
+    "user": "Usuário",
+    "concierge": "Porteiro",
     "cancel": "Cancelar",
     "create": "Criar",
     "update": "Atualizar",
