@@ -108,6 +108,15 @@ export interface Notice {
   updatedAt: string;
 }
 
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  role: 'admin' | 'user' | 'concierge';
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface DashboardStats {
   totalReservations: number;
   confirmedReservations: number;

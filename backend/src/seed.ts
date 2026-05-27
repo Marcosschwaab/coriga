@@ -6,12 +6,16 @@ import { Payment, PaymentStatus, PaymentMethod } from './entities/payment.entity
 import { Holiday, HolidayType } from './entities/holiday.entity';
 import { PricingConfig } from './entities/pricing-config.entity';
 import { User, UserRole } from './entities/user.entity';
+import { Guest } from './entities/guest.entity';
+import { Recipient } from './entities/recipient.entity';
+import { PackageOrder } from './entities/package-order.entity';
+import { Notice } from './entities/notice.entity';
 
 async function seed() {
   const dataSource = new DataSource({
     type: 'sqlite',
     database: 'data/database.sqlite',
-    entities: [User, Resident, Reservation, Payment, Holiday, PricingConfig],
+    entities: [User, Resident, Reservation, Payment, Holiday, PricingConfig, Guest, Recipient, PackageOrder, Notice],
     synchronize: true,
   });
 
@@ -26,7 +30,7 @@ async function seed() {
   const pricingConfigRepo = dataSource.getRepository(PricingConfig);
 
   // Create default admin user
-  const adminPassword = await bcrypt.hash('admin123', 10);
+  const adminPassword = await bcrypt.hash('admin', 10);
   const existingAdmin = await userRepo.findOne({ where: { username: 'admin' } });
   if (!existingAdmin) {
     const admin = userRepo.create({
@@ -36,13 +40,13 @@ async function seed() {
       role: UserRole.ADMIN,
     });
     await userRepo.save(admin);
-    console.log('Created admin user (username: admin, password: admin123)');
+    console.log('Created admin user (username: admin, password: admin)');
   } else {
     console.log('Admin user already exists');
   }
 
   // Create default user
-  const userPassword = await bcrypt.hash('user123', 10);
+  const userPassword = await bcrypt.hash('user', 10);
   const existingUser = await userRepo.findOne({ where: { username: 'user' } });
   if (!existingUser) {
     const user = userRepo.create({
@@ -52,9 +56,25 @@ async function seed() {
       role: UserRole.USER,
     });
     await userRepo.save(user);
-    console.log('Created user (username: user, password: user123)');
+    console.log('Created user (username: user, password: user)');
   } else {
     console.log('User already exists');
+  }
+
+  // Create concierge user
+  const conciergePassword = await bcrypt.hash('porteiro', 10);
+  const existingConcierge = await userRepo.findOne({ where: { username: 'porteiro' } });
+  if (!existingConcierge) {
+    const concierge = userRepo.create({
+      username: 'porteiro',
+      email: 'porteiro@coriga.com',
+      password: conciergePassword,
+      role: UserRole.CONCIERGE,
+    });
+    await userRepo.save(concierge);
+    console.log('Created concierge user (username: porteiro, password: porteiro)');
+  } else {
+    console.log('Concierge user already exists');
   }
 
   // Create pricing config
@@ -68,26 +88,30 @@ async function seed() {
 
   // Create residents
   const residents = residentRepo.create([
-    { name: 'Zhang Wei', phone: '13800138001', address: 'Building 1, Unit 101', email: 'zhang.wei@example.com' },
-    { name: 'Li Na', phone: '13800138002', address: 'Building 2, Unit 202', email: 'li.na@example.com' },
-    { name: 'Wang Fang', phone: '13800138003', address: 'Building 3, Unit 303', email: 'wang.fang@example.com' },
-    { name: 'Liu Yang', phone: '13800138004', address: 'Building 4, Unit 404', email: 'liu.yang@example.com' },
-    { name: 'Chen Min', phone: '13800138005', address: 'Building 5, Unit 505', email: 'chen.min@example.com' },
+    { name: 'Carlos Alberto Souza', phone: '51999990001', address: 'Av. Ipiranga, 1000 - Apto 401', email: 'carlos.souza@email.com.br' },
+    { name: 'Fernanda Costa Lima', phone: '51999990002', address: 'Rua da Praia, 200 - Apto 1202', email: 'fernanda.lima@email.com.br' },
+    { name: 'Roberto Oliveira Dias', phone: '51999990003', address: 'Rua Independência, 500 - Casa 3', email: 'roberto.dias@email.com.br' },
+    { name: 'Juliana Martins Rocha', phone: '51999990004', address: 'Av. João Pessoa, 300 - Apto 801', email: 'juliana.rocha@email.com.br' },
+    { name: 'Marcos Vinicius Schwaab', phone: '51999990005', address: 'Rua Padre Chagas, 150 - Apto 502', email: 'marcos.schwaab@email.com.br' },
   ]);
   const savedResidents = await residentRepo.save(residents);
   console.log(`Created ${savedResidents.length} residents`);
 
   // Create holidays for 2026
   const holidays = holidayRepo.create([
-    { name: 'New Year Day', date: '2026-01-01', type: HolidayType.NATIONAL },
-    { name: 'Spring Festival', date: '2026-02-17', type: HolidayType.NATIONAL },
-    { name: 'Spring Festival Holiday', date: '2026-02-18', type: HolidayType.NATIONAL },
-    { name: 'Qingming Festival', date: '2026-04-05', type: HolidayType.NATIONAL },
-    { name: 'Labor Day', date: '2026-05-01', type: HolidayType.NATIONAL },
-    { name: 'Dragon Boat Festival', date: '2026-06-19', type: HolidayType.NATIONAL },
-    { name: 'Mid-Autumn Festival', date: '2026-09-25', type: HolidayType.NATIONAL },
-    { name: 'National Day', date: '2026-10-01', type: HolidayType.NATIONAL },
-    { name: 'Community Anniversary', date: '2026-06-15', type: HolidayType.CONDOMINIUM },
+    { name: 'Ano Novo', date: '2026-01-01', type: HolidayType.NATIONAL },
+    { name: 'Carnaval', date: '2026-02-17', type: HolidayType.NATIONAL },
+    { name: 'Carnaval (ponto facultativo)', date: '2026-02-18', type: HolidayType.NATIONAL },
+    { name: 'Sexta-feira Santa', date: '2026-04-03', type: HolidayType.NATIONAL },
+    { name: 'Tiradentes', date: '2026-04-21', type: HolidayType.NATIONAL },
+    { name: 'Dia do Trabalho', date: '2026-05-01', type: HolidayType.NATIONAL },
+    { name: 'Corpus Christi', date: '2026-06-04', type: HolidayType.NATIONAL },
+    { name: 'Independência do Brasil', date: '2026-09-07', type: HolidayType.NATIONAL },
+    { name: 'Nossa Sra. Aparecida', date: '2026-10-12', type: HolidayType.NATIONAL },
+    { name: 'Finados', date: '2026-11-02', type: HolidayType.NATIONAL },
+    { name: 'Proclamação da República', date: '2026-11-15', type: HolidayType.NATIONAL },
+    { name: 'Natal', date: '2026-12-25', type: HolidayType.NATIONAL },
+    { name: 'Aniversário de Porto Alegre', date: '2026-03-26', type: HolidayType.CONDOMINIUM },
   ]);
   const savedHolidays = await holidayRepo.save(holidays);
   console.log(`Created ${savedHolidays.length} holidays`);

@@ -40,7 +40,8 @@
     "holidays": "Feriados",
     "pricing": "Preços",
     "notices": "Avisos",
-    "packages": "Correios"
+    "packages": "Correios",
+    "users": "Usuários"
   },
   "app": {
     "brand": "Coriga",
@@ -204,6 +205,23 @@
     "createdSuccess": "Aviso criado",
     "deletedSuccess": "Aviso excluído",
     "confirmDelete": "Tem certeza que deseja excluir este aviso?"
+  },
+  "users": {
+    "title": "Usuários",
+    "addUser": "Adicionar Usuário",
+    "editUser": "Editar Usuário",
+    "username": "Usuário",
+    "email": "E-mail",
+    "password": "Senha",
+    "passwordOptional": " (deixe em branco para manter a atual)",
+    "leaveBlank": "Deixe em branco para manter a atual",
+    "role": "Função",
+    "searchPlaceholder": "Buscar por usuário ou e-mail...",
+    "noUsers": "Nenhum usuário encontrado",
+    "createdSuccess": "Usuário criado com sucesso",
+    "updatedSuccess": "Usuário atualizado com sucesso",
+    "deletedSuccess": "Usuário excluído",
+    "confirmDelete": "Tem certeza que deseja excluir este usuário?"
   },
   "auth": {
     "login": "Entrar",

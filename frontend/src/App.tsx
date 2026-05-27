@@ -16,6 +16,7 @@ import {
   LogOut,
   Megaphone,
   Package,
+  UserCog,
 } from 'lucide-react';
 import { DashboardPage } from './pages/Dashboard';
 import { CalendarPage } from './pages/Calendar';
@@ -27,6 +28,7 @@ import { HolidaysPage } from './pages/Holidays';
 import { AdminNoticesPage } from './pages/AdminNotices';
 import { UserNoticesPage } from './pages/UserNotices';
 import { PackagesPage } from './pages/Packages';
+import { AdminUsersPage } from './pages/AdminUsers';
 import { LoginPage } from './pages/Login';
 
 const adminNavItems = [
@@ -39,6 +41,7 @@ const adminNavItems = [
   { path: '/notices', label: 'nav.notices', icon: Megaphone },
   { path: '/packages', label: 'nav.packages', icon: Package },
   { path: '/pricing', label: 'nav.pricing', icon: Settings },
+  { path: '/users', label: 'nav.users', icon: UserCog },
 ];
 
 const conciergeNavItems = [
@@ -75,7 +78,6 @@ function Sidebar() {
       <div className={`fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-gray-200 transform transition-transform duration-200 lg:translate-x-0 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-6 border-b border-gray-100">
           <h1 className="text-xl font-bold text-indigo-600">{t('app.brand')}</h1>
-          <p className="text-sm text-gray-500">{t('app.subtitle')}</p>
         </div>
 
         {user && (
@@ -90,7 +92,7 @@ function Sidebar() {
           </div>
         )}
 
-        <nav className="p-4 space-y-1">
+        <nav className="p-4 space-y-1 pb-20">
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -180,6 +182,7 @@ function AppRoutes() {
       <Route path="/pricing" element={<ProtectedRoute><PricingPage /></ProtectedRoute>} />
       <Route path="/notices" element={<ProtectedRoute>{user?.role === 'admin' ? <AdminNoticesPage /> : <UserNoticesPage />}</ProtectedRoute>} />
       <Route path="/packages" element={<ProtectedRoute><PackagesPage /></ProtectedRoute>} />
+      <Route path="/users" element={<ProtectedRoute><AdminUsersPage /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/calendar" replace />} />
     </Routes>
   );

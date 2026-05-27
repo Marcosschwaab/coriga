@@ -61,15 +61,15 @@ export async function setupTestApp(): Promise<TestContext> {
 
   const adminRes = await supertest(httpServer)
     .post('/api/auth/login')
-    .send({ username: 'admin', password: 'admin123' });
+    .send({ username: 'admin', password: 'admin' });
 
   const userRes = await supertest(httpServer)
     .post('/api/auth/login')
-    .send({ username: 'user', password: 'user123' });
+    .send({ username: 'user', password: 'user' });
 
   const conciergeRes = await supertest(httpServer)
     .post('/api/auth/login')
-    .send({ username: 'concierge', password: 'concierge123' });
+    .send({ username: 'porteiro', password: 'porteiro' });
 
   return {
     app,

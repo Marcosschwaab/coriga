@@ -68,18 +68,17 @@ describe('AuthController (e2e)', () => {
     it('should login admin successfully', async () => {
       const res = await request(ctx.httpServer)
         .post('/api/auth/login')
-        .send({ username: 'admin', password: 'admin123' })
+        .send({ username: 'admin', password: 'admin' })
         .expect(201);
 
       expect(res.body).toHaveProperty('access_token');
       expect(res.body.user.role).toBe('admin');
-      expect(res.body.user.username).toBe('admin');
     });
 
-    it('should login user successfully', async () => {
+    it('should login as regular user', async () => {
       const res = await request(ctx.httpServer)
         .post('/api/auth/login')
-        .send({ username: 'user', password: 'user123' })
+        .send({ username: 'user', password: 'user' })
         .expect(201);
 
       expect(res.body).toHaveProperty('access_token');

@@ -1,4 +1,4 @@
-import { Resident, Reservation, Payment, Holiday, PricingConfig, DashboardStats, PaginatedResponse, Notice, Guest, Recipient, PackageOrder } from '../types';
+import { Resident, Reservation, Payment, Holiday, PricingConfig, DashboardStats, PaginatedResponse, Notice, Guest, Recipient, PackageOrder, User } from '../types';
 
 const API_BASE = '/api';
 
@@ -128,5 +128,18 @@ export const api = {
   pricingConfig: {
     get: () => request<PricingConfig>('/pricing-config'),
     update: (data: Partial<PricingConfig>) => request<PricingConfig>('/pricing-config', { method: 'PATCH', body: JSON.stringify(data) }),
+  },
+  users: {
+    list: (search?: string, page = 1, limit = 20) => {
+      const params = new URLSearchParams();
+      if (search) params.set('search', search);
+      params.set('page', String(page));
+      params.set('limit', String(limit));
+      return request<PaginatedResponse<User>>(`/auth/users?${params.toString()}`);
+    },
+    get: (id: number) => request<User>(`/auth/users/${id}`),
+    create: (data: { username: string; email: string; password: string; role?: string }) => request<User>('/auth/users', { method: 'POST', body: JSON.stringify(data) }),
+    update: (id: number, data: { username?: string; email?: string; password?: string; role?: string }) => request<User>(`/auth/users/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    remove: (id: number) => request<void>(`/auth/users/${id}`, { method: 'DELETE' }),
   },
 };
