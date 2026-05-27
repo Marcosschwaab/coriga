@@ -150,16 +150,16 @@ export function ReservationsPage() {
               <React.Fragment key={res.id}>
                 <tr className="border-b border-gray-50 hover:bg-gray-50">
                   <td className="py-3 px-4">
-                    <div className="flex items-center gap-1.5">
-                      <Calendar className="w-4 h-4 text-gray-400" />
-                      {new Date(res.date + 'T00:00:00').toLocaleDateString()}
-                    </div>
+                    <button onClick={() => toggleExpand(res.id)} className="flex items-center gap-1.5 text-left text-inherit cursor-pointer">
+                      <Calendar className="w-4 h-4 text-gray-400 shrink-0" />
+                      <span>{new Date(res.date + 'T00:00:00').toLocaleDateString()}</span>
+                    </button>
                   </td>
                   <td className="py-3 px-4">
-                    <div className="flex items-center gap-1.5">
-                      <User className="w-4 h-4 text-gray-400" />
-                      {res.resident?.name}
-                    </div>
+                    <button onClick={() => toggleExpand(res.id)} className="flex items-center gap-1.5 text-left text-inherit cursor-pointer">
+                      <User className="w-4 h-4 text-gray-400 shrink-0" />
+                      <span className="font-medium">{res.resident?.name}</span>
+                    </button>
                   </td>
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-1.5">
@@ -189,8 +189,9 @@ export function ReservationsPage() {
                   </td>
                   <td className="py-3 px-4">
                     <div className="flex gap-1">
-                      <button onClick={() => toggleExpand(res.id)} className="p-1.5 hover:bg-indigo-50 rounded-lg transition-colors text-indigo-600" title={t('common.view')}>
+                      <button onClick={() => toggleExpand(res.id)} className="px-2 py-1.5 text-sm font-medium text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors flex items-center gap-1">
                         {expandedId === res.id ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        <span>{t('common.view')}</span>
                       </button>
                       <button onClick={() => { setEditingReservation(res); setShowModal(true); }} className="p-1.5 hover:bg-indigo-50 rounded-lg transition-colors text-indigo-600" title={t('common.edit')}>
                         <Pencil className="w-4 h-4" />
