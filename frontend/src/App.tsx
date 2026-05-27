@@ -15,6 +15,7 @@ import {
   Menu,
   LogOut,
   Megaphone,
+  Package,
 } from 'lucide-react';
 import { DashboardPage } from './pages/Dashboard';
 import { CalendarPage } from './pages/Calendar';
@@ -25,6 +26,7 @@ import { PricingPage } from './pages/Pricing';
 import { HolidaysPage } from './pages/Holidays';
 import { AdminNoticesPage } from './pages/AdminNotices';
 import { UserNoticesPage } from './pages/UserNotices';
+import { PackagesPage } from './pages/Packages';
 import { LoginPage } from './pages/Login';
 
 const adminNavItems = [
@@ -35,12 +37,14 @@ const adminNavItems = [
   { path: '/payments', label: 'nav.payments', icon: CreditCard },
   { path: '/holidays', label: 'nav.holidays', icon: PartyPopper },
   { path: '/notices', label: 'nav.notices', icon: Megaphone },
+  { path: '/packages', label: 'nav.packages', icon: Package },
   { path: '/pricing', label: 'nav.pricing', icon: Settings },
 ];
 
 const userNavItems = [
   { path: '/calendar', label: 'nav.calendar', icon: CalendarDays },
   { path: '/notices', label: 'nav.notices', icon: Megaphone },
+  { path: '/packages', label: 'nav.packages', icon: Package },
 ];
 
 function Sidebar() {
@@ -167,6 +171,7 @@ function AppRoutes() {
       <Route path="/holidays" element={<ProtectedRoute><HolidaysPage /></ProtectedRoute>} />
       <Route path="/pricing" element={<ProtectedRoute><PricingPage /></ProtectedRoute>} />
       <Route path="/notices" element={<ProtectedRoute>{user?.role === 'admin' ? <AdminNoticesPage /> : <UserNoticesPage />}</ProtectedRoute>} />
+      <Route path="/packages" element={<ProtectedRoute><PackagesPage /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/calendar" replace />} />
     </Routes>
   );

@@ -36,7 +36,8 @@
     "payments": "Pagamentos",
     "holidays": "Feriados",
     "pricing": "Preços",
-    "notices": "Avisos"
+    "notices": "Avisos",
+    "packages": "Correios"
   },
   "app": {
     "brand": "Coriga",
@@ -157,6 +158,31 @@
     "holidayHelper": "Feriados nacionais, municipais ou do condomínio",
     "savePricing": "Salvar Preços",
     "updatedSuccess": "Preços atualizados com sucesso"
+  },
+  "packages": {
+    "title": "Encomendas",
+    "registerPackage": "Registrar Encomenda",
+    "scanLabel": "Escaneiar Etiqueta",
+    "trackingCode": "Código de Rastreio",
+    "recipient": "Destinatário",
+    "recipientData": "Dados do Destinatário",
+    "packageData": "Dados da Encomenda",
+    "receivedAt": "Recebida Em",
+    "fullName": "Nome Completo",
+    "address": "Endereço",
+    "zipCode": "CEP",
+    "neighborhood": "Bairro",
+    "city": "Cidade",
+    "searchPlaceholder": "Buscar por código ou destinatário...",
+    "noPackages": "Nenhuma encomenda registrada",
+    "createdSuccess": "Encomenda registrada com sucesso",
+    "updatedSuccess": "Encomenda atualizada com sucesso",
+    "deletedSuccess": "Encomenda excluída",
+    "editPackage": "Editar Encomenda",
+    "confirmDelete": "Tem certeza que deseja excluir esta encomenda?",
+    "ocrSuccess": "Etiqueta escaneada! Revise os dados.",
+    "ocrError": "Não foi possível ler a etiqueta. Preencha manualmente.",
+    "recipientExists": "Este destinatário já está cadastrado. Selecione-o na lista."
   },
   "guests": {
     "title": "Participantes",

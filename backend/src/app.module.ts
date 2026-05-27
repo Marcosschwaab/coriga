@@ -10,6 +10,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { NoticesModule } from './modules/notices/notices.module';
 import { GuestsModule } from './modules/guests/guests.module';
+import { PackagesModule } from './modules/packages/packages.module';
 import { JwtAuthGuard } from './modules/auth/jwt-auth.guard';
 import { RolesGuard } from './modules/auth/roles.guard';
 
@@ -30,6 +31,7 @@ import { RolesGuard } from './modules/auth/roles.guard';
     DashboardModule,
     NoticesModule,
     GuestsModule,
+    PackagesModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

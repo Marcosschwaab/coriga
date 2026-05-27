@@ -1,4 +1,4 @@
-import { Resident, Reservation, Payment, Holiday, PricingConfig, DashboardStats, PaginatedResponse, Notice, Guest } from '../types';
+import { Resident, Reservation, Payment, Holiday, PricingConfig, DashboardStats, PaginatedResponse, Notice, Guest, Recipient, PackageOrder } from '../types';
 
 const API_BASE = '/api';
 
@@ -86,6 +86,26 @@ export const api = {
     create: (data: Partial<Holiday>) => request<Holiday>('/holidays', { method: 'POST', body: JSON.stringify(data) }),
     update: (id: number, data: Partial<Holiday>) => request<Holiday>(`/holidays/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
     remove: (id: number) => request<void>(`/holidays/${id}`, { method: 'DELETE' }),
+  },
+  packages: {
+    listRecipients: (search?: string, page = 1, limit = 50) => {
+      const params = new URLSearchParams();
+      if (search) params.set('search', search);
+      params.set('page', String(page));
+      params.set('limit', String(limit));
+      return request<PaginatedResponse<Recipient>>(`/packages/recipients?${params.toString()}`);
+    },
+    createRecipient: (data: Partial<Recipient>) => request<Recipient>('/packages/recipients', { method: 'POST', body: JSON.stringify(data) }),
+    list: (search?: string, page = 1, limit = 50) => {
+      const params = new URLSearchParams();
+      if (search) params.set('search', search);
+      params.set('page', String(page));
+      params.set('limit', String(limit));
+      return request<PaginatedResponse<PackageOrder>>(`/packages?${params.toString()}`);
+    },
+    create: (data: Partial<PackageOrder>) => request<PackageOrder>('/packages', { method: 'POST', body: JSON.stringify(data) }),
+    update: (id: number, data: Partial<PackageOrder>) => request<PackageOrder>(`/packages/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    remove: (id: number) => request<void>(`/packages/${id}`, { method: 'DELETE' }),
   },
   guests: {
     list: (reservationId: number) => request<Guest[]>(`/guests/reservation/${reservationId}`),

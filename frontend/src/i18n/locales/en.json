@@ -36,7 +36,8 @@
     "payments": "Payments",
     "holidays": "Holidays",
     "pricing": "Pricing",
-    "notices": "Notices"
+    "notices": "Notices",
+    "packages": "Packages"
   },
   "app": {
     "brand": "Coriga",
@@ -157,6 +158,31 @@
     "holidayHelper": "National, municipal, or condominium holidays",
     "savePricing": "Save Pricing",
     "updatedSuccess": "Pricing updated successfully"
+  },
+  "packages": {
+    "title": "Packages",
+    "registerPackage": "Register Package",
+    "scanLabel": "Scan Label",
+    "trackingCode": "Tracking Code",
+    "recipient": "Recipient",
+    "recipientData": "Recipient Data",
+    "packageData": "Package Data",
+    "receivedAt": "Received At",
+    "fullName": "Full Name",
+    "address": "Address",
+    "zipCode": "ZIP Code",
+    "neighborhood": "Neighborhood",
+    "city": "City",
+    "searchPlaceholder": "Search by tracking code or recipient...",
+    "noPackages": "No packages registered",
+    "createdSuccess": "Package registered successfully",
+    "updatedSuccess": "Package updated successfully",
+    "deletedSuccess": "Package deleted",
+    "editPackage": "Edit Package",
+    "confirmDelete": "Are you sure you want to delete this package?",
+    "ocrSuccess": "Label scanned! Please review the data.",
+    "ocrError": "Could not read the label. Please fill manually.",
+    "recipientExists": "This recipient is already registered. Select it from the list."
   },
   "guests": {
     "title": "Participants",

@@ -79,6 +79,27 @@ export interface PaginatedResponse<T> {
   totalPages: number;
 }
 
+export interface Recipient {
+  id: number;
+  nome: string;
+  endereco: string;
+  cep: string;
+  cidade: string;
+  bairro: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PackageOrder {
+  id: number;
+  codigoRastreio: string;
+  recipient: Recipient;
+  recipientId: number;
+  dataRecebimento: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Notice {
   id: number;
   title: string;
