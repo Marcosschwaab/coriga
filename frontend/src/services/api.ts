@@ -1,4 +1,4 @@
-import { Resident, Reservation, Payment, Holiday, PricingConfig, DashboardStats, PaginatedResponse } from '../types';
+import { Resident, Reservation, Payment, Holiday, PricingConfig, DashboardStats, PaginatedResponse, Notice } from '../types';
 
 const API_BASE = '/api';
 
@@ -85,6 +85,18 @@ export const api = {
     create: (data: Partial<Holiday>) => request<Holiday>('/holidays', { method: 'POST', body: JSON.stringify(data) }),
     update: (id: number, data: Partial<Holiday>) => request<Holiday>(`/holidays/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
     remove: (id: number) => request<void>(`/holidays/${id}`, { method: 'DELETE' }),
+  },
+  notices: {
+    list: (page = 1, limit = 20) => {
+      const params = new URLSearchParams();
+      params.set('page', String(page));
+      params.set('limit', String(limit));
+      return request<PaginatedResponse<Notice>>(`/notices?${params.toString()}`);
+    },
+    get: (id: number) => request<Notice>(`/notices/${id}`),
+    create: (data: Partial<Notice>) => request<Notice>('/notices', { method: 'POST', body: JSON.stringify(data) }),
+    update: (id: number, data: Partial<Notice>) => request<Notice>(`/notices/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    remove: (id: number) => request<void>(`/notices/${id}`, { method: 'DELETE' }),
   },
   pricingConfig: {
     get: () => request<PricingConfig>('/pricing-config'),

@@ -14,6 +14,8 @@
     "date": "Data",
     "name": "Nome",
     "type": "Tipo",
+    "title": "Título",
+    "content": "Conteúdo",
     "price": "Preço",
     "allStatus": "Todos os Status",
     "noResults": "Nenhum resultado encontrado",
@@ -31,7 +33,8 @@
     "reservations": "Reservas",
     "payments": "Pagamentos",
     "holidays": "Feriados",
-    "pricing": "Preços"
+    "pricing": "Preços",
+    "notices": "Avisos"
   },
   "app": {
     "brand": "Coriga",
@@ -150,6 +153,16 @@
     "holidayHelper": "Feriados nacionais, municipais ou do condomínio",
     "savePricing": "Salvar Preços",
     "updatedSuccess": "Preços atualizados com sucesso"
+  },
+  "notices": {
+    "title": "Avisos",
+    "addNotice": "Adicionar Aviso",
+    "editNotice": "Editar Aviso",
+    "noNotices": "Nenhum aviso encontrado",
+    "updatedSuccess": "Aviso atualizado",
+    "createdSuccess": "Aviso criado",
+    "deletedSuccess": "Aviso excluído",
+    "confirmDelete": "Tem certeza que deseja excluir este aviso?"
   },
   "auth": {
     "login": "Entrar",

@@ -8,6 +8,7 @@ import { HolidaysModule } from './modules/holidays/holidays.module';
 import { PricingConfigModule } from './modules/pricing-config/pricing-config.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { NoticesModule } from './modules/notices/notices.module';
 import { JwtAuthGuard } from './modules/auth/jwt-auth.guard';
 import { RolesGuard } from './modules/auth/roles.guard';
 
@@ -26,6 +27,7 @@ import { RolesGuard } from './modules/auth/roles.guard';
     HolidaysModule,
     PricingConfigModule,
     DashboardModule,
+    NoticesModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

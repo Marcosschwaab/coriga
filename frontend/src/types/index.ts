@@ -69,6 +69,14 @@ export interface PaginatedResponse<T> {
   totalPages: number;
 }
 
+export interface Notice {
+  id: number;
+  title: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface DashboardStats {
   totalReservations: number;
   confirmedReservations: number;

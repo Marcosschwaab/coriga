@@ -14,6 +14,8 @@
     "date": "Date",
     "name": "Name",
     "type": "Type",
+    "title": "Title",
+    "content": "Content",
     "price": "Price",
     "allStatus": "All Status",
     "noResults": "No results found",
@@ -31,7 +33,8 @@
     "reservations": "Reservations",
     "payments": "Payments",
     "holidays": "Holidays",
-    "pricing": "Pricing"
+    "pricing": "Pricing",
+    "notices": "Notices"
   },
   "app": {
     "brand": "Coriga",
@@ -150,6 +153,16 @@
     "holidayHelper": "National, municipal, or condominium holidays",
     "savePricing": "Save Pricing",
     "updatedSuccess": "Pricing updated successfully"
+  },
+  "notices": {
+    "title": "Notices",
+    "addNotice": "Add Notice",
+    "editNotice": "Edit Notice",
+    "noNotices": "No notices found",
+    "updatedSuccess": "Notice updated",
+    "createdSuccess": "Notice created",
+    "deletedSuccess": "Notice deleted",
+    "confirmDelete": "Are you sure you want to delete this notice?"
   },
   "auth": {
     "login": "Login",
