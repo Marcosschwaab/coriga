@@ -9,6 +9,7 @@ import { PricingConfigModule } from './modules/pricing-config/pricing-config.mod
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { NoticesModule } from './modules/notices/notices.module';
+import { GuestsModule } from './modules/guests/guests.module';
 import { JwtAuthGuard } from './modules/auth/jwt-auth.guard';
 import { RolesGuard } from './modules/auth/roles.guard';
 
@@ -28,6 +29,7 @@ import { RolesGuard } from './modules/auth/roles.guard';
     PricingConfigModule,
     DashboardModule,
     NoticesModule,
+    GuestsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

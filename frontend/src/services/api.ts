@@ -1,4 +1,4 @@
-import { Resident, Reservation, Payment, Holiday, PricingConfig, DashboardStats, PaginatedResponse, Notice } from '../types';
+import { Resident, Reservation, Payment, Holiday, PricingConfig, DashboardStats, PaginatedResponse, Notice, Guest } from '../types';
 
 const API_BASE = '/api';
 
@@ -26,7 +26,8 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
     const error = await response.json().catch(() => ({ message: response.statusText }));
     throw new Error(error.message || 'Request failed');
   }
-  return response.json();
+  const text = await response.text();
+  return text ? JSON.parse(text) : undefined as T;
 }
 
 export const api = {
@@ -85,6 +86,12 @@ export const api = {
     create: (data: Partial<Holiday>) => request<Holiday>('/holidays', { method: 'POST', body: JSON.stringify(data) }),
     update: (id: number, data: Partial<Holiday>) => request<Holiday>(`/holidays/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
     remove: (id: number) => request<void>(`/holidays/${id}`, { method: 'DELETE' }),
+  },
+  guests: {
+    list: (reservationId: number) => request<Guest[]>(`/guests/reservation/${reservationId}`),
+    create: (data: Partial<Guest>) => request<Guest>('/guests', { method: 'POST', body: JSON.stringify(data) }),
+    update: (id: number, data: Partial<Guest>) => request<Guest>(`/guests/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    remove: (id: number) => request<void>(`/guests/${id}`, { method: 'DELETE' }),
   },
   notices: {
     list: (page = 1, limit = 20) => {

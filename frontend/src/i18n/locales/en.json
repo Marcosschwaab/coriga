@@ -6,6 +6,8 @@
     "create": "Create",
     "update": "Update",
     "edit": "Edit",
+    "view": "View",
+    "close": "Close",
     "delete": "Delete",
     "save": "Save",
     "actions": "Actions",
@@ -102,7 +104,9 @@
     "cancelledSuccess": "Reservation cancelled",
     "confirmCancel": "Are you sure you want to cancel this reservation?",
     "csvHeaders": ["ID", "Resident", "Date", "Status", "Day Type", "Price", "Payment Status", "Notes"],
-    "na": "N/A"
+    "na": "N/A",
+    "detailTitle": "Reservation Details",
+    "reservationInfo": "Reservation Information"
   },
   "payments": {
     "title": "Payments",
@@ -153,6 +157,14 @@
     "holidayHelper": "National, municipal, or condominium holidays",
     "savePricing": "Save Pricing",
     "updatedSuccess": "Pricing updated successfully"
+  },
+  "guests": {
+    "title": "Participants",
+    "addPlaceholder": "Add participant name...",
+    "noGuests": "No participants added yet",
+    "togglePresence": "Toggle presence",
+    "present": "Present",
+    "presenceOnlyEventDay": "Presence can only be marked on the event day"
   },
   "notices": {
     "title": "Notices",

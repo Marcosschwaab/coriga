@@ -6,6 +6,8 @@
     "create": "Criar",
     "update": "Atualizar",
     "edit": "Editar",
+    "view": "Visualizar",
+    "close": "Fechar",
     "delete": "Excluir",
     "save": "Salvar",
     "actions": "Ações",
@@ -102,7 +104,9 @@
     "cancelledSuccess": "Reserva cancelada",
     "confirmCancel": "Tem certeza que deseja cancelar esta reserva?",
     "csvHeaders": ["ID", "Morador", "Data", "Status", "Tipo do Dia", "Preço", "Status do Pagamento", "Observações"],
-    "na": "N/A"
+    "na": "N/A",
+    "detailTitle": "Detalhes da Reserva",
+    "reservationInfo": "Informações da Reserva"
   },
   "payments": {
     "title": "Pagamentos",
@@ -153,6 +157,14 @@
     "holidayHelper": "Feriados nacionais, municipais ou do condomínio",
     "savePricing": "Salvar Preços",
     "updatedSuccess": "Preços atualizados com sucesso"
+  },
+  "guests": {
+    "title": "Participantes",
+    "addPlaceholder": "Adicionar nome do participante...",
+    "noGuests": "Nenhum participante adicionado",
+    "togglePresence": "Marcar presença",
+    "present": "Presente",
+    "presenceOnlyEventDay": "Presença só pode ser marcada no dia do evento"
   },
   "notices": {
     "title": "Avisos",

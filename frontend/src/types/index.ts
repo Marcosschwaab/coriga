@@ -27,6 +27,15 @@ export interface Payment {
   updatedAt: string;
 }
 
+export interface Guest {
+  id: number;
+  reservationId: number;
+  name: string;
+  isPresent: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Reservation {
   id: number;
   resident: Resident;
@@ -38,6 +47,7 @@ export interface Reservation {
   dayType: DayType;
   payment: Payment | null;
   paymentId: number | null;
+  guests?: Guest[];
   createdAt: string;
   updatedAt: string;
 }

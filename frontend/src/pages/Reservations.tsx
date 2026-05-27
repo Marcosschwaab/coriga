@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../services/api';
 import { formatCurrency } from '../services/currency';
-import { Reservation, Resident } from '../types';
+import { Reservation, Resident, Guest } from '../types';
 import { Modal } from '../components/Modal';
 import { Loading } from '../components/Loading';
 import { Pagination } from '../components/Pagination';
 import { useToast } from '../components/Toast';
-import { FileText, Plus, Download, Pencil, XCircle, Filter, Calendar, User, Tag, DollarSign } from 'lucide-react';
+import { FileText, Plus, Download, Pencil, XCircle, Filter, Calendar, User, Tag, DollarSign, Eye, EyeOff, Info, CheckCircle, Clock, LoaderCircle, Trash2, Users, CheckSquare } from 'lucide-react';
 
 export function ReservationsPage() {
   const { t } = useTranslation();
@@ -19,6 +19,7 @@ export function ReservationsPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -58,6 +59,7 @@ export function ReservationsPage() {
     try {
       await api.reservations.cancel(id);
       showToast(t('reservations.cancelledSuccess'));
+      setExpandedId(null);
       api.reservations.list(undefined, filterStatus || undefined, page).then((res) => {
         setReservations(res.data);
         setTotalPages(res.totalPages);
@@ -65,6 +67,10 @@ export function ReservationsPage() {
     } catch (err: any) {
       showToast(err.message, 'error');
     }
+  };
+
+  const toggleExpand = (id: number) => {
+    setExpandedId(expandedId === id ? null : id);
   };
 
   const exportCSV = () => {
@@ -137,58 +143,80 @@ export function ReservationsPage() {
           </thead>
           <tbody>
             {reservations.map((res) => (
-              <tr key={res.id} className="border-b border-gray-50 hover:bg-gray-50">
-                <td className="py-3 px-4">
-                  <div className="flex items-center gap-1.5">
-                    <Calendar className="w-4 h-4 text-gray-400" />
-                    {new Date(res.date + 'T00:00:00').toLocaleDateString()}
-                  </div>
-                </td>
-                <td className="py-3 px-4">
-                  <div className="flex items-center gap-1.5">
-                    <User className="w-4 h-4 text-gray-400" />
-                    {res.resident?.name}
-                  </div>
-                </td>
-                <td className="py-3 px-4">
-                  <div className="flex items-center gap-1.5">
-                    <Tag className="w-4 h-4 text-gray-400" />
-                    <span className="capitalize">{res.dayType}</span>
-                  </div>
-                </td>
-                <td className="py-3 px-4">
-                  <div className="flex items-center gap-1.5">
-                    <DollarSign className="w-4 h-4 text-gray-400" />
-                    {formatCurrency(res.price)}
-                  </div>
-                </td>
-                <td className="py-3 px-4">
-                  <span className={`badge ${res.status === 'reserved' ? 'badge-info' : res.status === 'cancelled' ? 'badge-danger' : 'badge-success'}`}>
-                    {res.status}
-                  </span>
-                </td>
-                <td className="py-3 px-4">
-                  {res.payment ? (
-                    <span className={`badge ${res.payment.status === 'paid' ? 'badge-success' : res.payment.status === 'pending' ? 'badge-warning' : res.payment.status === 'partially_paid' ? 'badge-info' : 'badge-danger'}`}>
-                      {res.payment.status}
+              <React.Fragment key={res.id}>
+                <tr className="border-b border-gray-50 hover:bg-gray-50">
+                  <td className="py-3 px-4">
+                    <div className="flex items-center gap-1.5">
+                      <Calendar className="w-4 h-4 text-gray-400" />
+                      {new Date(res.date + 'T00:00:00').toLocaleDateString()}
+                    </div>
+                  </td>
+                  <td className="py-3 px-4">
+                    <div className="flex items-center gap-1.5">
+                      <User className="w-4 h-4 text-gray-400" />
+                      {res.resident?.name}
+                    </div>
+                  </td>
+                  <td className="py-3 px-4">
+                    <div className="flex items-center gap-1.5">
+                      <Tag className="w-4 h-4 text-gray-400" />
+                      <span className="capitalize">{res.dayType}</span>
+                    </div>
+                  </td>
+                  <td className="py-3 px-4">
+                    <div className="flex items-center gap-1.5">
+                      <DollarSign className="w-4 h-4 text-gray-400" />
+                      {formatCurrency(res.price)}
+                    </div>
+                  </td>
+                  <td className="py-3 px-4">
+                    <span className={`badge ${res.status === 'reserved' ? 'badge-info' : res.status === 'cancelled' ? 'badge-danger' : 'badge-success'}`}>
+                      {res.status}
                     </span>
-                  ) : (
-                    <span className="badge badge-gray">{t('reservations.na')}</span>
-                  )}
-                </td>
-                <td className="py-3 px-4">
-                  <div className="flex gap-1">
-                    <button onClick={() => { setEditingReservation(res); setShowModal(true); }} className="p-1.5 hover:bg-indigo-50 rounded-lg transition-colors text-indigo-600" title={t('common.edit')}>
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    {res.status !== 'cancelled' && (
-                      <button onClick={() => handleCancel(res.id)} className="p-1.5 hover:bg-red-50 rounded-lg transition-colors text-red-600" title={t('common.cancel')}>
-                        <XCircle className="w-4 h-4" />
-                      </button>
+                  </td>
+                  <td className="py-3 px-4">
+                    {res.payment ? (
+                      <span className={`badge ${res.payment.status === 'paid' ? 'badge-success' : res.payment.status === 'pending' ? 'badge-warning' : res.payment.status === 'partially_paid' ? 'badge-info' : 'badge-danger'}`}>
+                        {res.payment.status}
+                      </span>
+                    ) : (
+                      <span className="badge badge-gray">{t('reservations.na')}</span>
                     )}
-                  </div>
-                </td>
-              </tr>
+                  </td>
+                  <td className="py-3 px-4">
+                    <div className="flex gap-1">
+                      <button onClick={() => toggleExpand(res.id)} className="p-1.5 hover:bg-indigo-50 rounded-lg transition-colors text-indigo-600" title={t('common.view')}>
+                        {expandedId === res.id ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                      <button onClick={() => { setEditingReservation(res); setShowModal(true); }} className="p-1.5 hover:bg-indigo-50 rounded-lg transition-colors text-indigo-600" title={t('common.edit')}>
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      {res.status !== 'cancelled' && (
+                        <button onClick={() => handleCancel(res.id)} className="p-1.5 hover:bg-red-50 rounded-lg transition-colors text-red-600" title={t('common.cancel')}>
+                          <XCircle className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+                {expandedId === res.id && (
+                  <tr>
+                    <td colSpan={7} className="p-0">
+                      <InlineReservationDetail
+                        reservation={res}
+                        onEdit={() => { setEditingReservation(res); setShowModal(true); }}
+                        onCancel={() => handleCancel(res.id)}
+                        onRefresh={() => {
+                          api.reservations.list(undefined, filterStatus || undefined, page).then((resData) => {
+                            setReservations(resData.data);
+                            setTotalPages(resData.totalPages);
+                          });
+                        }}
+                      />
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
             ))}
           </tbody>
         </table>
@@ -202,6 +230,236 @@ export function ReservationsPage() {
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditingReservation(null); }} title={editingReservation ? t('reservations.editReservation') : t('reservations.newReservation')}>
         <ReservationForm reservation={editingReservation} residents={residents} onSave={handleSave} onCancel={() => { setShowModal(false); setEditingReservation(null); }} />
       </Modal>
+    </div>
+  );
+}
+
+function InlineReservationDetail({ reservation, onEdit, onCancel, onRefresh }: {
+  reservation: Reservation;
+  onEdit: () => void;
+  onCancel: () => void;
+  onRefresh: () => void;
+}) {
+  const { t } = useTranslation();
+  const { showToast } = useToast();
+  const [guests, setGuests] = useState<Guest[]>([]);
+  const [guestName, setGuestName] = useState('');
+  const [guestsLoading, setGuestsLoading] = useState(true);
+
+  useEffect(() => {
+    setGuestsLoading(true);
+    api.guests.list(reservation.id).then(setGuests).finally(() => setGuestsLoading(false));
+  }, [reservation.id]);
+
+  const addGuest = async () => {
+    if (!guestName.trim()) return;
+    try {
+      const guest = await api.guests.create({ reservationId: reservation.id, name: guestName.trim() });
+      setGuests([...guests, guest]);
+      setGuestName('');
+    } catch (err: any) {
+      showToast(err.message, 'error');
+    }
+  };
+
+  const removeGuest = async (id: number) => {
+    try {
+      await api.guests.remove(id);
+      setGuests(guests.filter((g) => g.id !== id));
+    } catch (err: any) {
+      showToast(err.message, 'error');
+    }
+  };
+
+  const togglePresence = async (guest: Guest) => {
+    try {
+      const updated = await api.guests.update(guest.id, { isPresent: !guest.isPresent });
+      setGuests(guests.map((g) => (g.id === guest.id ? updated : g)));
+    } catch (err: any) {
+      showToast(err.message, 'error');
+    }
+  };
+
+  const today = new Date().toISOString().split('T')[0];
+  const isEventDay = reservation.date === today;
+
+  return (
+    <div className="bg-gray-50 p-6 border-t border-gray-200 space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white rounded-lg p-4 space-y-3 shadow-sm">
+          <h3 className="font-semibold text-gray-700 flex items-center gap-2">
+            <User className="w-4 h-4" />
+            {t('residents.title')}
+          </h3>
+          <div className="space-y-2 text-sm">
+            <div>
+              <p className="text-gray-500">{t('residents.fullName')}</p>
+              <p className="font-medium">{reservation.resident?.name}</p>
+            </div>
+            <div>
+              <p className="text-gray-500">{t('residents.phone')}</p>
+              <p className="font-medium">{reservation.resident?.phone}</p>
+            </div>
+            <div>
+              <p className="text-gray-500">{t('residents.email')}</p>
+              <p className="font-medium">{reservation.resident?.email}</p>
+            </div>
+            <div>
+              <p className="text-gray-500">{t('residents.address')}</p>
+              <p className="font-medium">{reservation.resident?.address}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg p-4 space-y-3 shadow-sm">
+          <h3 className="font-semibold text-gray-700 flex items-center gap-2">
+            <Info className="w-4 h-4" />
+            {t('reservations.reservationInfo')}
+          </h3>
+          <div className="space-y-2 text-sm">
+            <div>
+              <p className="text-gray-500">{t('common.date')}</p>
+              <p className="font-medium">{new Date(reservation.date + 'T00:00:00').toLocaleDateString()}</p>
+            </div>
+            <div>
+              <p className="text-gray-500">{t('common.type')}</p>
+              <p className="font-medium capitalize">{reservation.dayType}</p>
+            </div>
+            <div>
+              <p className="text-gray-500">{t('common.status')}</p>
+              <span className={`badge ${reservation.status === 'reserved' ? 'badge-info' : reservation.status === 'cancelled' ? 'badge-danger' : 'badge-success'}`}>
+                {reservation.status}
+              </span>
+            </div>
+            <div>
+              <p className="text-gray-500">{t('common.price')}</p>
+              <p className="font-medium">{formatCurrency(reservation.price)}</p>
+            </div>
+            {reservation.notes && (
+              <div>
+                <p className="text-gray-500">{t('common.notes')}</p>
+                <p>{reservation.notes}</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {reservation.payment && (
+          <div className="bg-white rounded-lg p-4 space-y-3 shadow-sm">
+            <h3 className="font-semibold text-gray-700 flex items-center gap-2">
+              <DollarSign className="w-4 h-4" />
+              {t('nav.payments')}
+            </h3>
+            <div className="space-y-2 text-sm">
+              <div>
+                <p className="text-gray-500">{t('payments.total')}</p>
+                <p className="font-medium">{formatCurrency(reservation.payment.totalAmount)}</p>
+              </div>
+              <div>
+                <p className="text-gray-500">{t('payments.paidAmount')}</p>
+                <p className="font-medium">{formatCurrency(reservation.payment.paidAmount)}</p>
+              </div>
+              <div>
+                <p className="text-gray-500">{t('payments.remaining')}</p>
+                <p className="font-medium">{formatCurrency(reservation.payment.remainingAmount)}</p>
+              </div>
+              <div>
+                <p className="text-gray-500">{t('common.status')}</p>
+                <span className={`badge ${reservation.payment.status === 'paid' ? 'badge-success' : reservation.payment.status === 'pending' ? 'badge-warning' : reservation.payment.status === 'partially_paid' ? 'badge-info' : 'badge-danger'}`}>
+                  {reservation.payment.status === 'paid' ? t('payments.paid') : reservation.payment.status === 'pending' ? t('payments.pending') : reservation.payment.status === 'partially_paid' ? t('payments.partiallyPaid') : t('payments.cancelled')}
+                </span>
+              </div>
+              {reservation.payment.paymentMethod && (
+                <div>
+                  <p className="text-gray-500">{t('payments.method')}</p>
+                  <p className="capitalize">{reservation.payment.paymentMethod}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="bg-white rounded-lg p-4 shadow-sm space-y-4">
+        <h3 className="font-semibold text-gray-700 flex items-center gap-2">
+          <Users className="w-4 h-4" />
+          {t('guests.title')}
+          {!guestsLoading && (
+            <span className="badge badge-info text-xs ml-auto">{guests.length}</span>
+          )}
+        </h3>
+
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={guestName}
+            onChange={(e) => setGuestName(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && addGuest()}
+            placeholder={t('guests.addPlaceholder')}
+            className="input flex-1"
+          />
+          <button onClick={addGuest} className="btn-primary" disabled={!guestName.trim()}>
+            <Plus className="w-4 h-4" />
+          </button>
+        </div>
+
+        {guestsLoading ? (
+          <div className="flex items-center justify-center py-4">
+            <div className="animate-spin w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full" />
+          </div>
+        ) : guests.length === 0 ? (
+          <p className="text-sm text-gray-400 text-center py-4">{t('guests.noGuests')}</p>
+        ) : (
+          <div className="space-y-2 max-h-60 overflow-y-auto">
+            {guests.map((guest) => (
+              <div key={guest.id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => togglePresence(guest)}
+                    disabled={!isEventDay}
+                    className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                      guest.isPresent
+                        ? 'bg-green-500 border-green-500 text-white'
+                        : isEventDay
+                          ? 'border-gray-300 hover:border-green-400'
+                          : 'border-gray-200 cursor-not-allowed'
+                    }`}
+                    title={isEventDay ? t('guests.togglePresence') : t('guests.presenceOnlyEventDay')}
+                  >
+                    {guest.isPresent && <CheckSquare className="w-3.5 h-3.5" />}
+                  </button>
+                  <span className={`text-sm ${guest.isPresent ? 'font-medium text-gray-800' : 'text-gray-600'}`}>
+                    {guest.name}
+                  </span>
+                  {guest.isPresent && (
+                    <span className="badge badge-success text-xs">{t('guests.present')}</span>
+                  )}
+                </div>
+                <button
+                  onClick={() => removeGuest(guest.id)}
+                  className="p-1 hover:bg-red-50 rounded-lg transition-colors text-red-500"
+                  title={t('common.delete')}
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="flex gap-3 pt-2">
+        <button type="button" onClick={onEdit} className="btn-primary flex items-center justify-center gap-2">
+          <Pencil className="w-4 h-4" />
+          {t('common.edit')}
+        </button>
+        {reservation.status !== 'cancelled' && (
+          <button type="button" onClick={onCancel} className="btn-danger flex items-center justify-center gap-2">
+            <XCircle className="w-4 h-4" />
+            {t('common.cancel')}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

@@ -6,10 +6,12 @@ import {
   UpdateDateColumn,
   ManyToOne,
   OneToOne,
+  OneToMany,
   JoinColumn,
 } from 'typeorm';
 import { Resident } from './resident.entity';
 import { Payment } from './payment.entity';
+import { Guest } from './guest.entity';
 
 export enum ReservationStatus {
   RESERVED = 'reserved',
@@ -64,6 +66,9 @@ export class Reservation {
 
   @Column({ nullable: true })
   paymentId: number;
+
+  @OneToMany(() => Guest, (guest) => guest.reservation)
+  guests: Guest[];
 
   @CreateDateColumn({ type: 'datetime' })
   createdAt: Date;
